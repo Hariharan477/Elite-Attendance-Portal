@@ -3,8 +3,9 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class ApiService {
-  // Real physical Android phone connects to PC local IP address on port 5000
-  static const String baseUrl = 'http://172.16.0.137:5000/api'; 
+  // Live Production Server URL on Render
+  static const String baseUrl = 'https://elite-attendance-api.onrender.com/api'; 
+
 
 
   final _storage = const FlutterSecureStorage();
