@@ -25,10 +25,9 @@ export const seedDatabase = async () => {
       await Department.updateOne({ code: d.code }, { $setOnInsert: d }, { upsert: true });
     }
 
-    // 2. Admin Users (IFET domain & authorized admin accounts)
+    // 2. Admin Users (Authorized admin accounts)
     const adminEmails = [
       'admin@ifet.ac.in',
-      'hariharan.cse25@ifet.ac.in',
       'hariharan477hr@gmail.com'
     ].map(e => e.toLowerCase().trim());
 
@@ -51,26 +50,9 @@ export const seedDatabase = async () => {
       console.log(`[Seeder] Admin account verified/created: ${email}`);
     }
 
+    // Clean up old demo student 'hariharan.cse25@ifet.ac.in' if previously created as admin/student
+    await User.deleteMany({ email: 'hariharan.cse25@ifet.ac.in' });
 
-
-    // 3. Demo IFET Student
-    await User.updateOne(
-      { email: 'hariharan.cse25@ifet.ac.in' },
-      {
-        $setOnInsert: {
-          name: 'Hariharan H',
-          email: 'hariharan.cse25@ifet.ac.in',
-          role: 'student',
-          registerNo: '710022104001',
-          rollNo: '22CS001',
-          department: 'CSE',
-          year: '3',
-          section: 'A',
-          phone: '9876543210'
-        }
-      },
-      { upsert: true }
-    );
 
 
 
