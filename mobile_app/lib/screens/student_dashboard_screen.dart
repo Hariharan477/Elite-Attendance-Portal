@@ -490,9 +490,10 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     final DateTime? endTime = endTimeStr != null ? DateTime.parse(endTimeStr).toLocal() : null;
     final DateTime now = DateTime.now();
 
-    final bool isSessionActive = _settings != null && _settings!['status'] == 'ACTIVE' && _secondsRemaining > 0;
-    final bool isBeforeStart = startTime != null && now.isBefore(startTime);
-    final bool isEnded = endTime != null && now.isAfter(endTime);
+    final bool isSessionActive = _settings != null && _settings!['status'] == 'ACTIVE';
+    final bool isBeforeStart = !isSessionActive && startTime != null && now.isBefore(startTime);
+    final bool isEnded = !isSessionActive && (endTime != null && now.isAfter(endTime) || _settings?['status'] == 'EXPIRED');
+
 
     // ACTIVE SESSION
     if (isSessionActive) {

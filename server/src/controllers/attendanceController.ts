@@ -27,26 +27,37 @@ export const startDailyAttendance = async (req: AuthRequest, res: Response) => {
     let startDateTime: Date;
     let endDateTime: Date;
 
-    if (startTime.includes('T')) {
-      startDateTime = new Date(startTime);
-    } else {
-      const [sH, sM] = startTime.split(':').map(Number);
-      startDateTime = new Date(attendanceDate);
-      startDateTime.setHours(sH || 0, sM || 0, 0, 0);
-    }
-
-    if (endTime.includes('T')) {
-      endDateTime = new Date(endTime);
-    } else {
-      const [eH, eM] = endTime.split(':').map(Number);
-      endDateTime = new Date(attendanceDate);
-      endDateTime.setHours(eH || 23, eM || 59, 59, 999);
-
-      // If end time hour is earlier than start time (e.g. 11:00 PM to 12:38 AM across midnight), roll to next day
-      if (endDateTime <= startDateTime) {
-        endDateTime.setDate(endDateTime.getDate() + 1);
+    const parseTimeString = (dateStr: string, timeStr: string): Date => {
+      if (timeStr.includes('T')) {
+        return new Date(timeStr);
       }
+      const [year, month, day] = dateStr.split('-').map(Number);
+      let hours = 0;
+      let minutes = 0;
+
+      // Handle AM/PM if present
+      const isPM = /pm/i.test(timeStr);
+      const isAM = /am/i.test(timeStr);
+      const cleanTimeStr = timeStr.replace(/(am|pm)/i, '').trim();
+      const parts = cleanTimeStr.split(':').map(Number);
+      hours = parts[0] || 0;
+      minutes = parts[1] || 0;
+
+      if (isPM && hours < 12) hours += 12;
+      if (isAM && hours === 12) hours = 0;
+
+      // Construct Date object using local time
+      return new Date(year, month - 1, day, hours, minutes, 0, 0);
+    };
+
+    startDateTime = parseTimeString(attendanceDate, startTime);
+    endDateTime = parseTimeString(attendanceDate, endTime);
+
+    // If end time is earlier or equal to start time (e.g. 11:00 PM to 12:00 AM / midnight crossing), roll end time to next day
+    if (endDateTime <= startDateTime) {
+      endDateTime.setDate(endDateTime.getDate() + 1);
     }
+
 
 
 
