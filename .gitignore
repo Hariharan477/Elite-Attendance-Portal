@@ -1,0 +1,38 @@
+# Node / Backend
+node_modules/
+server/node_modules/
+client/node_modules/
+dist/
+build/
+coverage/
+*.log
+.env
+.env.*
+!.env.example
+atlas-credentials.env
+
+# Flutter / Dart / Android
+.dart_tool/
+mobile_app/.dart_tool/
+mobile_app/build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+
+android/.gradle/
+android/local.properties
+android/key.properties
+mobile_app/android/.gradle/
+mobile_app/android/local.properties
+mobile_app/android/key.properties
+*.jks
+*.keystore
+
+# iOS / macOS
+ios/Pods/
+macos/Pods/
+
+# IDE / Editor
+.idea/
+.vscode/
+.DS_Store
