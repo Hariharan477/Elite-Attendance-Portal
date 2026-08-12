@@ -25,8 +25,9 @@ export const seedDatabase = async () => {
       await Department.updateOne({ code: d.code }, { $setOnInsert: d }, { upsert: true });
     }
 
-    // 2. Admin Users (IFET domain)
-    const adminEmails = ['admin@ifet.ac.in', 'hariharan.cse25@ifet.ac.in'];
+    // 2. Admin Users (IFET domain & authorized admin accounts)
+    const adminEmails = ['admin@ifet.ac.in', 'hariharan.cse25@ifet.ac.in', 'hariharan477hr@gmail.com'];
+
     for (const email of adminEmails) {
       await User.updateOne(
         { email },

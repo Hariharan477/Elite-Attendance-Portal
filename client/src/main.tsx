@@ -6,7 +6,8 @@ import { AuthProvider } from './context/AuthContext';
 import './index.css';
 
 const savedClientId = localStorage.getItem('elite_google_client_id');
-const GOOGLE_CLIENT_ID = savedClientId || "1067204780517-samplegoogleclientid.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || savedClientId || "1070262530859-pht01lmkpruduf57hsv3tnhla2p9tao0.apps.googleusercontent.com";
+
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
