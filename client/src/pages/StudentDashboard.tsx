@@ -170,8 +170,9 @@ export const StudentDashboard: React.FC = () => {
           ) : (
             <div style={{ maxWidth: '500px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <button
-                onClick={() => handleMarkAttendance(true)}
+                onClick={() => handleMarkAttendance()}
                 className="glass-button"
+
                 disabled={loading || timeLeft <= 0}
                 style={{ width: '100%', padding: '1.25rem', fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.75rem' }}
               >
