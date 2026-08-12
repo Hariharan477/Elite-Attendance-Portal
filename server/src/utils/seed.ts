@@ -26,25 +26,31 @@ export const seedDatabase = async () => {
     }
 
     // 2. Admin Users (IFET domain & authorized admin accounts)
-    const adminEmails = ['admin@ifet.ac.in', 'hariharan.cse25@ifet.ac.in', 'hariharan477hr@gmail.com'];
+    const adminEmails = [
+      'admin@ifet.ac.in',
+      'hariharan.cse25@ifet.ac.in',
+      'hariharan477hr@gmail.com'
+    ].map(e => e.toLowerCase().trim());
 
     for (const email of adminEmails) {
       await User.updateOne(
         { email },
         {
           $set: {
+            email,
             role: 'admin',
             department: 'CSE'
           },
           $setOnInsert: {
             name: email.split('@')[0].toUpperCase(),
-            email,
             registerNo: 'ADM-001'
           }
         },
         { upsert: true }
       );
+      console.log(`[Seeder] Admin account verified/created: ${email}`);
     }
+
 
 
     // 3. Demo IFET Student
