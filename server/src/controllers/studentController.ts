@@ -38,26 +38,28 @@ export const createStudent = async (req: Request, res: Response) => {
 
     const cleanEmail = email.toLowerCase().trim();
 
-    const existingUser = await User.findOne({ email: cleanEmail });
+    const student = await User.findOneAndUpdate(
+      { email: cleanEmail },
+      {
+        $set: {
+          name,
+          email: cleanEmail,
+          role: 'student',
+          registerNo: registerNo || rollNo || `REG-${Date.now()}`,
+          rollNo: rollNo || registerNo || `ROLL-${Date.now()}`,
+          department: department || 'CSE',
+          year: year || '1',
+          section: section || 'A',
+          phone
+        }
+      },
+      { new: true, upsert: true }
+    );
 
-    if (existingUser) {
-      return res.status(400).json({ message: `Student with email '${cleanEmail}' already exists in database` });
-    }
 
-    const student = await User.create({
-      name,
-      email: cleanEmail,
-      role: 'student',
-      registerNo: registerNo || rollNo || `REG-${Date.now()}`,
-      rollNo: rollNo || registerNo || `ROLL-${Date.now()}`,
-      department: department || 'CSE',
-      year: year || '1',
-      section: section || 'A',
-      phone
-    });
-
-    console.log('[createStudent] Successfully created student:', student._id);
+    console.log('[createStudent] Successfully saved/updated student:', student._id);
     return res.status(201).json(student);
+
   } catch (error: any) {
     console.error('[createStudent] Exception error:', error);
     return res.status(500).json({ message: `Error creating student: ${error.message}` });
