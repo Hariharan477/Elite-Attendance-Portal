@@ -3,7 +3,11 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class DeviceIdService {
   static const String _deviceIdKey = 'elite_app_installation_device_id';
-  static const FlutterSecureStorage _storage = FlutterSecureStorage();
+  static const _androidOptions = AndroidOptions(
+    encryptedSharedPreferences: true,
+    resetOnError: true,
+  );
+  static const FlutterSecureStorage _storage = FlutterSecureStorage(aOptions: _androidOptions);
 
   static String? _cachedDeviceId;
 

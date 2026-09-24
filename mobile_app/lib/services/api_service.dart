@@ -8,10 +8,23 @@ class ApiService {
 
 
 
-  final _storage = const FlutterSecureStorage();
+  static const _androidOptions = AndroidOptions(
+    encryptedSharedPreferences: true,
+    resetOnError: true,
+  );
+
+  final _storage = const FlutterSecureStorage(aOptions: _androidOptions);
 
   Future<String?> getToken() async {
-    return await _storage.read(key: 'jwt_token');
+    try {
+      return await _storage.read(key: 'jwt_token').timeout(
+        const Duration(seconds: 3),
+        onTimeout: () => null,
+      );
+    } catch (e) {
+      print('[ApiService] Error reading token: $e');
+      return null;
+    }
   }
 
   Future<void> saveToken(String token) async {

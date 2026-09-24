@@ -45,26 +45,55 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   }
 
   Future<void> _checkAutoLogin() async {
-    await Future.delayed(const Duration(milliseconds: 1800));
-    final token = await _apiService.getToken();
-    if (mounted) {
-      if (token != null && token.isNotEmpty) {
-        Navigator.of(context).pushReplacement(
-          PageRouteBuilder(
-            pageBuilder: (_, __, ___) => const StudentDashboardScreen(),
-            transitionsBuilder: (_, animation, __, child) => FadeTransition(opacity: animation, child: child),
-            transitionDuration: const Duration(milliseconds: 400),
-          ),
-        );
+    print('[Splash] Checking saved login...');
+    String? token;
+    bool navigateToDashboard = false;
+
+    try {
+      final splashDelay = Future.delayed(const Duration(milliseconds: 1800));
+      final tokenFetch = _apiService.getToken().timeout(
+        const Duration(seconds: 3),
+        onTimeout: () {
+          print('[Splash] Secure storage read timed out');
+          return null;
+        },
+      );
+
+      final results = await Future.wait([splashDelay, tokenFetch]);
+      token = results[1] as String?;
+
+      if (token != null && token.trim().isNotEmpty) {
+        print('[Splash] Token found');
+        navigateToDashboard = true;
       } else {
-        Navigator.of(context).pushReplacement(
-          PageRouteBuilder(
-            pageBuilder: (_, __, ___) => const LoginScreen(),
-            transitionsBuilder: (_, animation, __, child) => FadeTransition(opacity: animation, child: child),
-            transitionDuration: const Duration(milliseconds: 400),
-          ),
-        );
+        print('[Splash] Token not found');
+        navigateToDashboard = false;
       }
+    } catch (e) {
+      print('[Splash] Secure storage error: $e');
+      navigateToDashboard = false;
+    }
+
+    if (!mounted) return;
+
+    if (navigateToDashboard) {
+      print('[Splash] Navigating to StudentDashboardScreen');
+      Navigator.of(context).pushReplacement(
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => const StudentDashboardScreen(),
+          transitionsBuilder: (_, animation, __, child) => FadeTransition(opacity: animation, child: child),
+          transitionDuration: const Duration(milliseconds: 400),
+        ),
+      );
+    } else {
+      print('[Splash] Navigating to LoginScreen');
+      Navigator.of(context).pushReplacement(
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => const LoginScreen(),
+          transitionsBuilder: (_, animation, __, child) => FadeTransition(opacity: animation, child: child),
+          transitionDuration: const Duration(milliseconds: 400),
+        ),
+      );
     }
   }
 
