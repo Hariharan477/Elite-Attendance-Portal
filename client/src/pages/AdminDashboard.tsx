@@ -10,6 +10,7 @@ export const AdminDashboard: React.FC = () => {
 
   // Data states
   const [students, setStudents] = useState<any[]>([]);
+  const [studentCount, setStudentCount] = useState<number>(0);
   const [wifiAPs, setWifiAPs] = useState<any[]>([]);
   const [reports, setReports] = useState<any[]>([]);
   const [todayOverview, setTodayOverview] = useState<any>(null);
@@ -37,8 +38,12 @@ export const AdminDashboard: React.FC = () => {
   const fetchSectionData = async () => {
     try {
       if (activeSection === 'students' || activeSection === 'dashboard') {
-        const res = await api.get(`/students?search=${search}&department=${deptFilter}`);
-        setStudents(res.data);
+        const [resStudents, resCount] = await Promise.all([
+          api.get(`/students?search=${search}&department=${deptFilter}`),
+          api.get('/students/count')
+        ]);
+        setStudents(resStudents.data);
+        setStudentCount(resCount.data.count);
       }
       if (activeSection === 'wifi' || activeSection === 'dashboard' || activeSection === 'daily') {
         const res = await api.get('/wifi');
@@ -269,7 +274,7 @@ export const AdminDashboard: React.FC = () => {
                 </div>
                 <div>
                   <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Registered Students</p>
-                  <h2 style={{ fontSize: '1.8rem', fontWeight: 800 }}>{students.length || 110}</h2>
+                  <h2 style={{ fontSize: '1.8rem', fontWeight: 800 }}>{studentCount}</h2>
                 </div>
               </div>
 

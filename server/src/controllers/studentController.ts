@@ -27,6 +27,16 @@ export const getStudents = async (req: Request, res: Response) => {
   }
 };
 
+export const getStudentCount = async (req: Request, res: Response) => {
+  try {
+    const count = await User.countDocuments({ role: 'student' });
+    return res.json({ count });
+  } catch (error: any) {
+    return res.status(500).json({ message: 'Error fetching student count', error: error.message });
+  }
+};
+
+
 export const createStudent = async (req: Request, res: Response) => {
   try {
     const { name, email, registerNo, rollNo, department, year, section, phone } = req.body;
