@@ -6,6 +6,7 @@ import { AttendanceSettings } from '../models/AttendanceSettings';
 import { Attendance } from '../models/Attendance';
 import { User } from '../models/User';
 import { WifiAccessPoint } from '../models/WifiAccessPoint';
+import { getIndiaDateString, formatIndiaDateTimeString, calculateSessionWindowIST } from '../utils/timezone';
 
 // Helper to check and auto-expire today's session
 const checkAndExpireTodaySession = async () => {
@@ -24,43 +25,18 @@ export const startDailyAttendance = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ message: 'Attendance Date, Start Time, and End Time are required' });
     }
 
-    let startDateTime: Date;
-    let endDateTime: Date;
+    const { startDateTime, endDateTime } = calculateSessionWindowIST(attendanceDate, startTime, endTime);
 
-    const parseTimeString = (dateStr: string, timeStr: string): Date => {
-      if (timeStr.includes('T')) {
-        return new Date(timeStr);
-      }
-      const [year, month, day] = dateStr.split('-').map(Number);
-      let hours = 0;
-      let minutes = 0;
+    // Logging timezone conversion and session details
+    const currentIST = formatIndiaDateTimeString(new Date());
+    const startIST = formatIndiaDateTimeString(startDateTime);
+    const endIST = formatIndiaDateTimeString(endDateTime);
 
-      // Handle AM/PM if present
-      const isPM = /pm/i.test(timeStr);
-      const isAM = /am/i.test(timeStr);
-      const cleanTimeStr = timeStr.replace(/(am|pm)/i, '').trim();
-      const parts = cleanTimeStr.split(':').map(Number);
-      hours = parts[0] || 0;
-      minutes = parts[1] || 0;
-
-      if (isPM && hours < 12) hours += 12;
-      if (isAM && hours === 12) hours = 0;
-
-      // Construct Date object using local time
-      return new Date(year, month - 1, day, hours, minutes, 0, 0);
-    };
-
-    startDateTime = parseTimeString(attendanceDate, startTime);
-    endDateTime = parseTimeString(attendanceDate, endTime);
-
-    // If end time is earlier or equal to start time (e.g. 11:00 PM to 12:00 AM / midnight crossing), roll end time to next day
-    if (endDateTime <= startDateTime) {
-      endDateTime.setDate(endDateTime.getDate() + 1);
-    }
-
-
-
-
+    console.log(`[TIMEZONE] Attendance Date: ${attendanceDate}`);
+    console.log(`[TIMEZONE] Start IST: ${startIST}`);
+    console.log(`[TIMEZONE] End IST: ${endIST}`);
+    console.log(`[TIMEZONE] Current IST: ${currentIST}`);
+    console.log(`[TIMEZONE] Session State: ACTIVE`);
 
     if (!wifiAccessPointId) {
       return res.status(400).json({
@@ -94,7 +70,6 @@ export const startDailyAttendance = async (req: AuthRequest, res: Response) => {
       wifiLocation
     });
 
-
     return res.status(201).json(settings);
   } catch (error: any) {
     return res.status(500).json({ message: 'Error starting daily attendance', error: error.message });
@@ -105,7 +80,7 @@ export const startDailyAttendance = async (req: AuthRequest, res: Response) => {
 export const endDailyAttendance = async (req: AuthRequest, res: Response) => {
   try {
     const { attendanceDate } = req.body;
-    const dateStr = attendanceDate || new Date().toISOString().split('T')[0];
+    const dateStr = attendanceDate || getIndiaDateString();
     const settings = await AttendanceSettings.findOne({ attendanceDate: dateStr });
 
     if (!settings) return res.status(404).json({ message: 'No attendance settings found for today' });
@@ -124,7 +99,7 @@ export const endDailyAttendance = async (req: AuthRequest, res: Response) => {
 export const markDailyAttendance = async (req: AuthRequest, res: Response) => {
   try {
     await checkAndExpireTodaySession();
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = getIndiaDateString();
     const studentId = req.user?.id;
     const { ssid, bssid } = req.body;
 
@@ -323,7 +298,7 @@ export const getTodayAttendanceOverview = async (req: AuthRequest, res: Response
   try {
     await checkAndExpireTodaySession();
     const { date } = req.query;
-    const targetDate = (date as string) || new Date().toISOString().split('T')[0];
+    const targetDate = (date as string) || getIndiaDateString();
 
     const settings = await AttendanceSettings.findOne({ attendanceDate: targetDate });
     const allStudents = await User.find({ role: 'student' }).sort({ registerNo: 1, name: 1 });
@@ -355,7 +330,7 @@ export const getTodayAttendanceOverview = async (req: AuthRequest, res: Response
 export const getStudentTodayStatus = async (req: AuthRequest, res: Response) => {
   try {
     await checkAndExpireTodaySession();
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = getIndiaDateString();
     const studentId = req.user?.id;
 
     // 1. Fetch active session currently open

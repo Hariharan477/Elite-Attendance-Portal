@@ -105,15 +105,40 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       });
 
       if (_settings != null && _settings!['status'] == 'ACTIVE') {
+        final startTimeStr = _settings!['startTime'];
         final endTimeStr = _settings!['endTime'];
+        final now = DateTime.now();
+
+        DateTime? startTime;
+        DateTime? endTime;
+        if (startTimeStr != null) {
+          try {
+            startTime = DateTime.parse(startTimeStr).toLocal();
+          } catch (_) {}
+        }
         if (endTimeStr != null) {
-          final endTime = DateTime.parse(endTimeStr).toLocal();
-          final now = DateTime.now();
+          try {
+            endTime = DateTime.parse(endTimeStr).toLocal();
+          } catch (_) {}
+        }
+
+        if (startTime != null && now.isBefore(startTime)) {
+          // Session has not started yet
+          setState(() {
+            _secondsRemaining = 0;
+          });
+          _startTimerForStart(startTime);
+        } else if (endTime != null && now.isBefore(endTime)) {
+          // Session is active
           final diff = endTime.difference(now).inSeconds;
           setState(() {
             _secondsRemaining = diff > 0 ? diff : 0;
           });
           _startTimer();
+        } else {
+          setState(() {
+            _secondsRemaining = 0;
+          });
         }
       } else {
         setState(() {
@@ -127,6 +152,20 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         });
       }
     }
+  }
+
+  void _startTimerForStart(DateTime startTime) {
+    _timer?.cancel();
+    final diff = startTime.difference(DateTime.now()).inSeconds;
+    if (diff <= 0) {
+      _fetchTodayStatus();
+      return;
+    }
+    _timer = Timer(Duration(seconds: diff + 1), () {
+      if (mounted) {
+        _fetchTodayStatus();
+      }
+    });
   }
 
   void _startTimer() {
@@ -213,9 +252,19 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   }
 
   String _formatTimer(int seconds) {
-    final m = (seconds / 60).floor().toString().padLeft(2, '0');
-    final s = (seconds % 60).toString().padLeft(2, '0');
-    return '$m : $s';
+    if (seconds <= 0) return '00 : 00';
+    final hours = (seconds / 3600).floor();
+    final minutes = ((seconds % 3600) / 60).floor();
+    final secs = seconds % 60;
+
+    final mStr = minutes.toString().padLeft(2, '0');
+    final sStr = secs.toString().padLeft(2, '0');
+
+    if (hours > 0) {
+      final hStr = hours.toString().padLeft(2, '0');
+      return '$hStr : $mStr : $sStr';
+    }
+    return '$mStr : $sStr';
   }
 
   Future<void> _logout() async {
@@ -624,8 +673,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       );
     }
 
-    final status = settings['status'] ?? '';
-
     // STATE D — Already marked
     if (_marked) {
       String checkInTimeStr = '';
@@ -649,46 +696,42 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       );
     }
 
-    // STATE C — Active session, not yet marked
-    if (status == 'ACTIVE' && _secondsRemaining > 0) {
-      return _buildActiveSessionState();
+    final status = settings['status'] ?? '';
+    DateTime? startTime;
+    DateTime? endTime;
+
+    if (settings['startTime'] != null) {
+      try {
+        startTime = DateTime.parse(settings['startTime']).toLocal();
+      } catch (_) {}
+    }
+    if (settings['endTime'] != null) {
+      try {
+        endTime = DateTime.parse(settings['endTime']).toLocal();
+      } catch (_) {}
     }
 
-    // STATE B — Before session starts
-    if (status == 'ACTIVE' && _secondsRemaining <= 0) {
-      // Session just ended
+    final now = DateTime.now();
+
+    // STATE B — Before session starts (now < startTime)
+    if (status == 'ACTIVE' && startTime != null && now.isBefore(startTime)) {
       return _stateContainer(
-        bgColor: const Color(0xFFF3F4F6),
-        borderColor: Colors.grey.withValues(alpha: 0.2),
-        icon: Icons.lock_clock_rounded,
-        iconColor: const Color(0xFF6B7280),
-        iconBgColor: const Color(0xFFE5E7EB),
-        title: 'Attendance Closed',
-        titleColor: const Color(0xFF374151),
-        subtitle: 'Today\'s attendance window has ended.',
+        bgColor: const Color(0xFFFFF9E6),
+        borderColor: _warningColor.withValues(alpha: 0.2),
+        icon: Icons.schedule_rounded,
+        iconColor: _warningColor,
+        iconBgColor: const Color(0xFFFFF3CD),
+        title: 'Attendance Starts At',
+        titleColor: _warningColor,
+        subtitle: _formatTimeOfDay(startTime),
+        subtitleStyle: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w800, color: _textPrimary),
+        extraSubtitle: 'Please wait until the session starts.',
       );
     }
 
-    // Check if session hasn't started yet
-    if (settings['startTime'] != null) {
-      try {
-        final startTime = DateTime.parse(settings['startTime']).toLocal();
-        final now = DateTime.now();
-        if (now.isBefore(startTime) && status == 'ACTIVE') {
-          return _stateContainer(
-            bgColor: const Color(0xFFFFF9E6),
-            borderColor: _warningColor.withValues(alpha: 0.2),
-            icon: Icons.schedule_rounded,
-            iconColor: _warningColor,
-            iconBgColor: const Color(0xFFFFF3CD),
-            title: 'Attendance Starts At',
-            titleColor: _warningColor,
-            subtitle: _formatTimeOfDay(startTime),
-            subtitleStyle: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w800, color: _textPrimary),
-            extraSubtitle: 'Please wait until the session starts.',
-          );
-        }
-      } catch (_) {}
+    // STATE C — Active session, not yet marked (startTime <= now < endTime AND status == 'ACTIVE')
+    if (status == 'ACTIVE' && _secondsRemaining > 0 && (endTime == null || now.isBefore(endTime))) {
+      return _buildActiveSessionState();
     }
 
     // STATE E — Ended / Expired
