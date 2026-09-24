@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import XLSX from 'xlsx';
 import { User } from '../models/User';
+import { StudentDevice } from '../models/StudentDevice';
 
 export const getStudents = async (req: Request, res: Response) => {
   try {
@@ -114,6 +115,11 @@ export const deleteStudent = async (req: Request, res: Response) => {
     if (!deleted) {
       return res.status(404).json({ message: 'Student not found' });
     }
+
+    // Clean up device bindings belonging to the deleted student
+    const deleteDeviceResult = await StudentDevice.deleteMany({ studentId: id });
+    console.log(`[DEVICE DELETE] Removed ${deleteDeviceResult.deletedCount} device binding(s) for deleted student ${deleted.email} (${id})`);
+
     return res.json({ message: 'Student deleted successfully' });
   } catch (error: any) {
     return res.status(500).json({ message: 'Error deleting student', error: error.message });

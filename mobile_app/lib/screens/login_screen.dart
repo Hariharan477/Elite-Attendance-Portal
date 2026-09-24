@@ -3,8 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../services/api_service.dart';
 import '../services/device_id_service.dart';
-import '../widgets/custom_components.dart';
-import '../widgets/error_banner.dart';
 import 'student_dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -23,6 +21,15 @@ class _LoginScreenState extends State<LoginScreen> {
   final ApiService _apiService = ApiService();
   bool _isLoading = false;
   String? _errorMessage;
+
+  // Colors matching Student Dashboard white + light-green theme
+  static const _bgColor = Color(0xFFF7FBF8);
+  static const _cardColor = Color(0xFFFFFFFF);
+  static const _primaryGreen = Color(0xFF0B8F55);
+  static const _paleGreen = Color(0xFFEEF9F2);
+  static const _textPrimary = Color(0xFF10231A);
+  static const _textSecondary = Color(0xFF66756D);
+  static const _errorColor = Color(0xFFE05252);
 
   Future<void> _handleGoogleSignIn() async {
     setState(() {
@@ -61,60 +68,73 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } catch (e) {
+      String rawMsg = e.toString().replaceAll("Exception: ", "").trim();
+      String formattedMsg = rawMsg;
+
+      if (rawMsg.contains('another student') || rawMsg.contains('already registered')) {
+        formattedMsg = "This device is already registered to another student. Please contact your administrator to reset the device.";
+      } else if (rawMsg.contains('not registered')) {
+        formattedMsg = "Your account is not registered by the administrator.";
+      }
+
       setState(() {
         _isLoading = false;
-        _errorMessage = e.toString().replaceAll("Exception: ", "");
+        _errorMessage = formattedMsg;
       });
     }
-  }
-
-  String _formatErrorTitle(String errorMsg) {
-    if (errorMsg.contains('not registered')) return 'Account Not Registered';
-    if (errorMsg.contains('another student')) return 'Device Registered Elsewhere';
-    if (errorMsg.contains('Wi-Fi')) return 'Campus Wi-Fi Required';
-    return 'Authentication Failed';
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: _bgColor,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Header Logo
+                // ── LOGO ──
                 Container(
-                  width: 80,
-                  height: 80,
+                  width: 72,
+                  height: 72,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF4F46E5),
-                    borderRadius: BorderRadius.circular(22),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF4F46E5).withValues(alpha: 0.35),
-                        blurRadius: 25,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
+                    color: _paleGreen,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: _primaryGreen.withValues(alpha: 0.2), width: 1.5),
                   ),
-                  child: const Icon(
-                    Icons.shield_outlined,
-                    size: 42,
-                    color: Colors.white,
+                  child: const Center(
+                    child: Icon(
+                      Icons.shield_rounded,
+                      size: 38,
+                      color: _primaryGreen,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 20),
-                Text(
-                  'Elite Attendance',
-                  style: GoogleFonts.inter(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                    letterSpacing: -0.5,
+                const SizedBox(height: 16),
+
+                // ── TITLE ──
+                RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: 'Elite ',
+                        style: GoogleFonts.inter(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w700,
+                          color: _textPrimary,
+                        ),
+                      ),
+                      TextSpan(
+                        text: 'Attendance',
+                        style: GoogleFonts.inter(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w800,
+                          color: _primaryGreen,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -122,15 +142,27 @@ class _LoginScreenState extends State<LoginScreen> {
                   'Student Attendance Portal',
                   style: GoogleFonts.inter(
                     fontSize: 14,
-                    color: const Color(0xFF818CF8),
-                    fontWeight: FontWeight.w600,
+                    color: _textSecondary,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(height: 32),
 
-                // Main Login Card
-                CustomCard(
+                // ── LOGIN CARD ──
+                Container(
+                  width: double.infinity,
                   padding: const EdgeInsets.all(28),
+                  decoration: BoxDecoration(
+                    color: _cardColor,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 16,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
                   child: Column(
                     children: [
                       Text(
@@ -138,26 +170,23 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: GoogleFonts.inter(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                          color: _textPrimary,
                         ),
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Secure attendance verification for students',
+                        'Sign in with your registered college Google account',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.inter(
                           fontSize: 13,
-                          color: const Color(0xFF94A3B8),
+                          color: _textSecondary,
                         ),
                       ),
                       const SizedBox(height: 24),
 
                       // Error message banner
                       if (_errorMessage != null) ...[
-                        ErrorBanner(
-                          title: _formatErrorTitle(_errorMessage!),
-                          message: _errorMessage!,
-                        ),
+                        _buildErrorCard(_errorMessage!),
                         const SizedBox(height: 20),
                       ],
 
@@ -168,12 +197,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: ElevatedButton(
                           onPressed: _isLoading ? null : _handleGoogleSignIn,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF4F46E5),
+                            backgroundColor: _primaryGreen,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
                             ),
-                            elevation: 4,
+                            elevation: 2,
+                            shadowColor: _primaryGreen.withValues(alpha: 0.3),
                           ),
                           child: _isLoading
                               ? const SizedBox(
@@ -188,17 +218,20 @@ class _LoginScreenState extends State<LoginScreen> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Container(
-                                      padding: const EdgeInsets.all(4),
+                                      width: 26,
+                                      height: 26,
                                       decoration: const BoxDecoration(
                                         color: Colors.white,
                                         shape: BoxShape.circle,
                                       ),
-                                      child: const Text(
-                                        'G',
-                                        style: TextStyle(
-                                          color: Color(0xFF4F46E5),
-                                          fontWeight: FontWeight.w900,
-                                          fontSize: 14,
+                                      child: Center(
+                                        child: Text(
+                                          'G',
+                                          style: GoogleFonts.inter(
+                                            color: _primaryGreen,
+                                            fontWeight: FontWeight.w900,
+                                            fontSize: 15,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -208,6 +241,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       style: GoogleFonts.inter(
                                         fontSize: 15,
                                         fontWeight: FontWeight.w700,
+                                        color: Colors.white,
                                       ),
                                     ),
                                   ],
@@ -219,18 +253,19 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 28),
 
-                // Security Note
+                // ── SECURITY NOTE ──
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.lock_outline, size: 14, color: Color(0xFF64748B)),
+                    Icon(Icons.shield_outlined, size: 14, color: _textSecondary.withValues(alpha: 0.8)),
                     const SizedBox(width: 6),
                     Flexible(
                       child: Text(
-                        'Secured using account, device & campus Wi-Fi verification.',
+                        'Secure attendance with account, device & campus Wi-Fi verification.',
+                        textAlign: TextAlign.center,
                         style: GoogleFonts.inter(
                           fontSize: 11,
-                          color: const Color(0xFF64748B),
+                          color: _textSecondary,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -241,6 +276,42 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildErrorCard(String message) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFDEEEE),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: _errorColor.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(
+            Icons.warning_amber_rounded,
+            color: _errorColor,
+            size: 20,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: _errorColor,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

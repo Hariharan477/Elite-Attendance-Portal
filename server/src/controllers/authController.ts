@@ -76,23 +76,42 @@ export const googleAuth = async (req: Request, res: Response) => {
       const existingDevice = await StudentDevice.findOne({ deviceId: cleanDeviceId, isActive: true });
 
       if (existingDevice) {
-        if (String(existingDevice.studentId) === String(user._id)) {
+        // Verify if the student referenced by existingDevice actually exists in User collection
+        const boundStudent = await User.findById(existingDevice.studentId).select('email name registerNo role');
+
+        if (!boundStudent) {
+          // Orphaned device binding! The bound student was deleted from User collection.
+          console.log(`[DEVICE CHECK] Removed orphaned device binding ${cleanDeviceId} (belonged to deleted student ID: ${existingDevice.studentId}).`);
+          await StudentDevice.deleteMany({ deviceId: cleanDeviceId });
+
+          // Register new device binding for current student
+          const studentActiveDevice = await StudentDevice.findOne({ studentId: user._id, isActive: true });
+          if (studentActiveDevice) {
+            studentActiveDevice.deviceId = cleanDeviceId;
+            studentActiveDevice.lastUsedAt = new Date();
+            await studentActiveDevice.save();
+            console.log(`[DEVICE UPDATE] Updated student ${user.email} active device to ${cleanDeviceId}`);
+          } else {
+            await StudentDevice.create({
+              studentId: user._id,
+              deviceId: cleanDeviceId,
+              isActive: true,
+              registeredAt: new Date(),
+              lastUsedAt: new Date()
+            });
+            console.log(`[DEVICE REGISTER] Registered new device ${cleanDeviceId} for student ${user.email} (${user._id}).`);
+          }
+        } else if (String(boundStudent._id) === String(user._id)) {
           // Same student & same device -> Update lastUsedAt
           existingDevice.lastUsedAt = new Date();
           await existingDevice.save();
           console.log(`[DEVICE CHECK] Student ${user.email} logged in with registered device.`);
         } else {
-          // Device is registered to another student!
-          // Look up the bound student's email for admin-friendly logging
-          const boundStudent = await User.findById(existingDevice.studentId).select('email name registerNo');
-          const boundEmail = boundStudent?.email || 'unknown';
-          const boundName = boundStudent?.name || 'unknown';
-          const boundRegNo = boundStudent?.registerNo || 'N/A';
-
-          console.log(`[DEVICE CHECK] REJECTED: Device ${cleanDeviceId} is bound to student ${boundName} (${boundEmail}, RegNo: ${boundRegNo}, ID: ${existingDevice.studentId}). Attempted login by: ${user.name} (${user.email}, ID: ${user._id}).`);
+          // Device is bound to ANOTHER active student!
+          console.log(`[DEVICE CHECK] REJECTED: Device ${cleanDeviceId} is bound to student ${boundStudent.name} (${boundStudent.email}, RegNo: ${boundStudent.registerNo}, ID: ${boundStudent._id}). Attempted login by: ${user.name} (${user.email}, ID: ${user._id}).`);
 
           return res.status(403).json({
-            message: 'This device is already registered to another student. Please ask your administrator to reset the device binding before using this account.'
+            message: 'This device is already registered to another student. Please contact your administrator to reset the device.'
           });
         }
       } else {
@@ -112,9 +131,8 @@ export const googleAuth = async (req: Request, res: Response) => {
             registeredAt: new Date(),
             lastUsedAt: new Date()
           });
-          console.log(`[DEVICE REGISTER] Student ${user.email} successfully registered new device ${cleanDeviceId}.`);
+          console.log(`[DEVICE REGISTER] Registered new device ${cleanDeviceId} for student ${user.email} (${user._id}).`);
         }
-
       }
     }
 
