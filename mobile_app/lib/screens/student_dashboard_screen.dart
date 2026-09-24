@@ -860,38 +860,92 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   // WI-FI STATUS ROW
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   Widget _buildWifiStatusRow() {
-    final isConnected = _currentPhoneSsid != 'Scanning...' &&
+    final bool isConnected = _currentPhoneSsid != 'Scanning...' &&
         _currentPhoneSsid != 'Disconnected' &&
         _currentPhoneSsid != '<unknown ssid>' &&
-        _currentPhoneSsid.isNotEmpty;
+        _currentPhoneSsid.trim().isNotEmpty;
 
-    return Row(
-      children: [
-        Icon(
-          Icons.wifi_rounded,
-          color: isConnected ? _successColor : _textSecondary,
-          size: 18,
+    final String displaySsid = isConnected ? _currentPhoneSsid : 'Not Connected';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: _paleGreen,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isConnected ? _primaryGreen.withValues(alpha: 0.2) : _errorColor.withValues(alpha: 0.2),
         ),
-        const SizedBox(width: 8),
-        Text(
-          'Campus Wi-Fi: ',
-          style: GoogleFonts.inter(fontSize: 13, color: _textSecondary),
-        ),
-        Text(
-          isConnected ? 'Connected' : 'Not Connected',
-          style: GoogleFonts.inter(
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-            color: isConnected ? _textPrimary : _errorColor,
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: isConnected ? _lightGreen : const Color(0xFFFDEEEE),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.wifi_rounded,
+              color: isConnected ? _primaryGreen : _errorColor,
+              size: 18,
+            ),
           ),
-        ),
-        const SizedBox(width: 6),
-        Icon(
-          isConnected ? Icons.check_circle : Icons.cancel,
-          color: isConnected ? _successColor : _errorColor,
-          size: 16,
-        ),
-      ],
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Campus Wi-Fi',
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: _textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  displaySsid,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: isConnected ? _textPrimary : _errorColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: isConnected ? _lightGreen : const Color(0xFFFDEEEE),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  isConnected ? Icons.check_circle_rounded : Icons.cancel_rounded,
+                  color: isConnected ? _successColor : _errorColor,
+                  size: 14,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  isConnected ? 'Connected' : 'Not Connected',
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: isConnected ? _successColor : _errorColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
