@@ -172,11 +172,15 @@ export const AdminDashboard: React.FC = () => {
     data.append('file', excelFile);
     try {
       const res = await api.post('/students/import-excel', data);
-      alert(res.data.message);
+      alert(res.data.message || 'Excel Import Completed Successfully');
       setExcelFile(null);
       fetchSectionData();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Excel Import Failed');
+      console.error('[Excel Import Error]', err, err.response);
+      const status = err.response?.status || 'unknown';
+      const msg = err.response?.data?.message || err.message || 'Excel Import Failed';
+      const detail = err.response?.data?.error ? `\nDetails: ${err.response.data.error}` : '';
+      alert(`Excel Import Failed\nStatus: ${status}\nMessage: ${msg}${detail}`);
     }
   };
 

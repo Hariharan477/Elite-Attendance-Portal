@@ -123,27 +123,78 @@ export const deleteStudent = async (req: Request, res: Response) => {
 // Import Students from Excel file upload
 export const importStudentsExcel = async (req: Request, res: Response) => {
   try {
+    console.log('[importStudentsExcel] Incoming request received.');
+    console.log('[importStudentsExcel] req.file exists:', !!req.file);
+
     if (!req.file) {
-      return res.status(400).json({ message: 'Please upload an Excel file (.xlsx or .xls)' });
+      console.error('[importStudentsExcel] REJECTED: No file uploaded in request.');
+      return res.status(400).json({
+        message: 'Please upload an Excel file (.xlsx or .xls)',
+        error: 'No file provided in form-data payload'
+      });
     }
 
-    const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+    console.log(`[importStudentsExcel] File Details -> Name: '${req.file.originalname}', MimeType: '${req.file.mimetype}', Size: ${req.file.size} bytes`);
+
+    let workbook: XLSX.WorkBook;
+    try {
+      workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+    } catch (parseError: any) {
+      console.error('[importStudentsExcel] XLSX parse buffer error:', parseError);
+      return res.status(400).json({
+        message: 'Failed to parse Excel file format',
+        error: parseError.message
+      });
+    }
+
     const sheetName = workbook.SheetNames[0];
-    const sheetData: any[] = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+    if (!sheetName) {
+      console.error('[importStudentsExcel] REJECTED: No worksheet found in Excel file.');
+      return res.status(400).json({
+        message: 'Excel workbook contains no sheets',
+        error: 'Empty workbook'
+      });
+    }
+
+    console.log(`[importStudentsExcel] Target Worksheet Name: '${sheetName}'`);
+
+    const sheetData: any[] = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {
+      defval: '',
+      raw: false
+    });
+
+    console.log(`[importStudentsExcel] Parsed Row Count: ${sheetData.length}`);
 
     let createdCount = 0;
+    let updatedCount = 0;
     let skippedCount = 0;
+    const rowErrors: string[] = [];
 
-    for (const row of sheetData) {
-      const name = row.Name || row.name;
-      const email = (row.Email || row.email || '').toString().toLowerCase().trim();
-      const department = row.Department || row.department || 'CSE';
-      const year = String(row.Year || row.year || '3');
-      const section = row.Section || row.section || 'A';
-      const registerNo = String(row['Register Number'] || row.registerNo || row.RegisterNo || '');
-      const rollNo = String(row['Roll Number'] || row.rollNo || row.RollNo || registerNo);
+    for (let i = 0; i < sheetData.length; i++) {
+      const row: any = sheetData[i];
+      const rowNum = i + 2;
 
-      if (name && email) {
+      const name = String(row.Name || row.name || '').trim();
+      const email = String(row.Email || row.email || '').toLowerCase().trim();
+      const department = String(row.Department || row.department || 'CSE').trim();
+      const year = String(row.Year || row.year || '3').trim();
+      const section = String(row.Section || row.section || 'A').trim();
+
+      const regNoRaw = row['Register Number'] || row['RegisterNo'] || row.registerNo || row.RegisterNo || row['Reg No'] || row['RegNo'] || '';
+      const registerNo = String(regNoRaw).trim();
+
+      const rollNoRaw = row['Roll Number'] || row['RollNo'] || row.rollNo || row.RollNo || registerNo;
+      const rollNo = String(rollNoRaw).trim();
+
+      if (!name || !email) {
+        skippedCount++;
+        const missingFields = [!name && 'Name', !email && 'Email'].filter(Boolean).join(', ');
+        rowErrors.push(`Row ${rowNum}: Missing mandatory ${missingFields}`);
+        console.warn(`[importStudentsExcel] Skipping Row ${rowNum}: Missing ${missingFields}`);
+        continue;
+      }
+
+      try {
         const existing = await User.findOne({ email });
 
         if (!existing) {
@@ -151,29 +202,49 @@ export const importStudentsExcel = async (req: Request, res: Response) => {
             name,
             email,
             role: 'student',
-            registerNo,
-            rollNo,
+            registerNo: registerNo || `REG-${Date.now()}-${i}`,
+            rollNo: rollNo || registerNo || `ROLL-${Date.now()}-${i}`,
             department,
             year,
             section
           });
           createdCount++;
         } else {
-          skippedCount++;
+          existing.name = name;
+          if (registerNo) existing.registerNo = registerNo;
+          if (rollNo) existing.rollNo = rollNo;
+          if (department) existing.department = department;
+          if (year) existing.year = year;
+          if (section) existing.section = section;
+          await existing.save();
+          updatedCount++;
         }
-      } else {
+      } catch (rowError: any) {
         skippedCount++;
+        rowErrors.push(`Row ${rowNum} (${email}): ${rowError.message}`);
+        console.error(`[importStudentsExcel] Error processing Row ${rowNum} (${email}):`, rowError.message);
       }
     }
 
+    console.log(`[importStudentsExcel] Completed. Created: ${createdCount}, Updated: ${updatedCount}, Skipped: ${skippedCount}, Total Rows: ${sheetData.length}`);
+
+    const resultMessage = `Excel import completed. Created: ${createdCount}, Updated: ${updatedCount}, Skipped: ${skippedCount}`;
+
     return res.json({
-      message: `Excel import completed successfully.`,
+      message: resultMessage,
       createdCount,
+      updatedCount,
       skippedCount,
-      totalRows: sheetData.length
+      totalRows: sheetData.length,
+      rowErrors: rowErrors.length > 0 ? rowErrors : undefined
     });
+
   } catch (error: any) {
-    return res.status(500).json({ message: 'Error parsing Excel file', error: error.message });
+    console.error('[importStudentsExcel] Unexpected exception error:', error);
+    return res.status(500).json({
+      message: 'Error parsing Excel file',
+      error: error.message || 'Server Exception'
+    });
   }
 };
 
