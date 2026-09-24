@@ -83,9 +83,16 @@ export const googleAuth = async (req: Request, res: Response) => {
           console.log(`[DEVICE CHECK] Student ${user.email} logged in with registered device.`);
         } else {
           // Device is registered to another student!
-          console.log(`[DEVICE CHECK] REJECTED: Device ${cleanDeviceId} is already bound to student ${existingDevice.studentId}, but student ${user.email} (${user._id}) attempted to log in.`);
+          // Look up the bound student's email for admin-friendly logging
+          const boundStudent = await User.findById(existingDevice.studentId).select('email name registerNo');
+          const boundEmail = boundStudent?.email || 'unknown';
+          const boundName = boundStudent?.name || 'unknown';
+          const boundRegNo = boundStudent?.registerNo || 'N/A';
+
+          console.log(`[DEVICE CHECK] REJECTED: Device ${cleanDeviceId} is bound to student ${boundName} (${boundEmail}, RegNo: ${boundRegNo}, ID: ${existingDevice.studentId}). Attempted login by: ${user.name} (${user.email}, ID: ${user._id}).`);
+
           return res.status(403).json({
-            message: 'This device is registered to another student.'
+            message: 'This device is already registered to another student. Please ask your administrator to reset the device binding before using this account.'
           });
         }
       } else {

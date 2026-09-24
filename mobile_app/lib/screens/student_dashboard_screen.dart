@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../services/api_service.dart';
 import '../services/wifi_service.dart';
@@ -19,7 +20,11 @@ class StudentDashboardScreen extends StatefulWidget {
 class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   final ApiService _apiService = ApiService();
   final WifiService _wifiService = WifiService();
-  final _storage = const FlutterSecureStorage();
+  static const _androidOptions = AndroidOptions(
+    encryptedSharedPreferences: true,
+    resetOnError: true,
+  );
+  final _storage = const FlutterSecureStorage(aOptions: _androidOptions);
 
   Map<String, dynamic>? _user;
   Map<String, dynamic>? _settings;
@@ -202,7 +207,17 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   }
 
   Future<void> _logout() async {
+    print('[Logout] Clearing JWT and user data...');
     await _apiService.clearToken();
+
+    // Sign out of Google so next login prompts account chooser
+    try {
+      await GoogleSignIn().signOut();
+      print('[Logout] Google Sign-In session cleared.');
+    } catch (e) {
+      print('[Logout] GoogleSignIn.signOut() error (non-fatal): $e');
+    }
+
     if (mounted) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const LoginScreen()),
