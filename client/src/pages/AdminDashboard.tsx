@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import * as XLSX from 'xlsx';
 import api from '../services/api';
 import {
   LayoutDashboard, Users, Calendar, FileText, Wifi, Settings, Plus,
@@ -177,6 +178,26 @@ export const AdminDashboard: React.FC = () => {
     } catch (err: any) {
       alert(err.response?.data?.message || 'Excel Import Failed');
     }
+  };
+
+  const handleDownloadTemplate = () => {
+    const headers = [['Name', 'Register Number', 'Department', 'Year', 'Section', 'Email']];
+    const worksheet = XLSX.utils.aoa_to_sheet(headers);
+
+    // Set column widths
+    worksheet['!cols'] = [
+      { wch: 22 }, // Name
+      { wch: 22 }, // Register Number
+      { wch: 15 }, // Department
+      { wch: 10 }, // Year
+      { wch: 10 }, // Section
+      { wch: 28 }  // Email
+    ];
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Students');
+
+    XLSX.writeFile(workbook, 'Elite_Attendance_Student_Import_Template.xlsx');
   };
 
   const handleExport = (format: 'excel' | 'pdf') => {
@@ -364,7 +385,24 @@ export const AdminDashboard: React.FC = () => {
                 </p>
               </div>
 
-              <form onSubmit={handleExcelImport} style={{ display: 'flex', gap: '0.5rem' }}>
+              <form onSubmit={handleExcelImport} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={handleDownloadTemplate}
+                  className="glass-button"
+                  style={{
+                    fontSize: '0.85rem',
+                    padding: '0.5rem 1rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    background: 'rgba(99, 102, 241, 0.2)',
+                    borderColor: 'rgba(99, 102, 241, 0.4)',
+                    color: '#a5b4fc'
+                  }}
+                >
+                  <Download size={16} /> Download Excel Template
+                </button>
                 <input
                   type="file"
                   accept=".xlsx, .xls"
