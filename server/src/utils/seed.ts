@@ -81,25 +81,60 @@ export const seedDatabase = async () => {
 export const cleanupOrphanedDevices = async () => {
   try {
     const { StudentDevice } = await import('../models/StudentDevice');
+
+    // 1. Remove orphaned device records (studentId no longer exists in User collection)
     const allDevices = await StudentDevice.find({});
-    let deletedCount = 0;
+    let orphanedCount = 0;
 
     for (const dev of allDevices) {
       const studentExists = await User.exists({ _id: dev.studentId });
       if (!studentExists) {
         await StudentDevice.deleteOne({ _id: dev._id });
-        deletedCount++;
+        orphanedCount++;
         console.log(`[DEVICE CLEANUP] Removed orphaned device ${dev.deviceId} (studentId: ${dev.studentId})`);
       }
     }
 
-    if (deletedCount > 0) {
-      console.log(`[DEVICE CLEANUP] Startup cleanup completed. Removed ${deletedCount} orphaned device record(s).`);
-    } else {
-      console.log(`[DEVICE CLEANUP] Startup check passed. No orphaned device records found.`);
+    // 2. Deduplicate active deviceId records (keep most recently used active record per deviceId)
+    const activeDevices = await StudentDevice.find({ isActive: true }).sort({ lastUsedAt: -1, updatedAt: -1 });
+    const seenDeviceIds = new Set<string>();
+    let duplicateCleanedCount = 0;
+
+    for (const dev of activeDevices) {
+      if (seenDeviceIds.has(dev.deviceId)) {
+        await StudentDevice.deleteOne({ _id: dev._id });
+        duplicateCleanedCount++;
+        console.log(`[DEVICE CLEANUP] Removed duplicate active device binding for deviceId: ${dev.deviceId} (studentId: ${dev.studentId})`);
+      } else {
+        seenDeviceIds.add(dev.deviceId);
+      }
     }
+
+    // 3. Deduplicate active studentId records (keep most recently used active record per studentId)
+    const activeStudentDevices = await StudentDevice.find({ isActive: true }).sort({ lastUsedAt: -1, updatedAt: -1 });
+    const seenStudentIds = new Set<string>();
+
+    for (const dev of activeStudentDevices) {
+      const sId = String(dev.studentId);
+      if (seenStudentIds.has(sId)) {
+        await StudentDevice.deleteOne({ _id: dev._id });
+        duplicateCleanedCount++;
+        console.log(`[DEVICE CLEANUP] Removed extra active device for studentId: ${sId}`);
+      } else {
+        seenStudentIds.add(sId);
+      }
+    }
+
+    if (orphanedCount > 0 || duplicateCleanedCount > 0) {
+      console.log(`[DEVICE CLEANUP] Startup cleanup completed: ${orphanedCount} orphan(s) and ${duplicateCleanedCount} duplicate active binding(s) removed.`);
+    } else {
+      console.log(`[DEVICE CLEANUP] Database clean. No orphaned or duplicate active device records found.`);
+    }
+
+    // Safely sync unique partial indexes now that duplicates are cleaned
+    await StudentDevice.syncIndexes();
   } catch (error) {
-    console.error('[DEVICE CLEANUP] Error during startup device cleanup:', error);
+    console.error('[DEVICE CLEANUP] Error during startup device cleanup & index sync:', error);
   }
 };
 

@@ -72,26 +72,74 @@ export const googleAuth = async (req: Request, res: Response) => {
       const cleanDeviceId = deviceId.trim();
       const { StudentDevice } = await import('../models/StudentDevice');
 
-      // Check if this device is active with any student
-      const existingDevice = await StudentDevice.findOne({ deviceId: cleanDeviceId, isActive: true });
+      // 1. FIRST check whether the current authenticated student already owns an active binding for this deviceId
+      const sameStudentDevice = await StudentDevice.findOne({
+        deviceId: cleanDeviceId,
+        studentId: user._id,
+        isActive: true
+      });
 
-      if (existingDevice) {
-        // Verify if the student referenced by existingDevice actually exists in User collection
-        const boundStudent = await User.findById(existingDevice.studentId).select('email name registerNo role');
+      if (sameStudentDevice) {
+        sameStudentDevice.lastUsedAt = new Date();
+        await sameStudentDevice.save();
+        console.log(`[DEVICE CHECK] Same student device found. Allowed for student: ${user.email}`);
+        console.log(`[DEVICE CHECK] Same student + same device allowed`);
+      } else {
+        // 2. Only if sameStudentDevice is NOT found, check if device is actively bound to another student
+        const otherStudentDevice = await StudentDevice.findOne({
+          deviceId: cleanDeviceId,
+          isActive: true,
+          studentId: { $ne: user._id }
+        });
 
-        if (!boundStudent) {
-          // Orphaned device binding! The bound student was deleted from User collection.
-          console.log(`[DEVICE CHECK] Removed orphaned device binding ${cleanDeviceId} (belonged to deleted student ID: ${existingDevice.studentId}).`);
-          await StudentDevice.deleteMany({ deviceId: cleanDeviceId });
+        if (otherStudentDevice) {
+          console.log(`[DEVICE CHECK] Other student device found: ${cleanDeviceId}`);
 
-          // Register new device binding for current student
+          // Check if the student referenced by otherStudentDevice actually exists in User collection
+          const boundStudent = await User.findById(otherStudentDevice.studentId).select('email name registerNo role');
+
+          if (!boundStudent) {
+            // Orphaned device binding!
+            console.log(`[DEVICE CHECK] Orphaned device detected for device: ${cleanDeviceId}`);
+            await StudentDevice.deleteMany({ deviceId: cleanDeviceId, studentId: otherStudentDevice.studentId });
+            console.log(`[DEVICE CHECK] Removed orphaned device binding for device: ${cleanDeviceId}`);
+
+            // Register / update device binding for current student
+            const studentActiveDevice = await StudentDevice.findOne({ studentId: user._id, isActive: true });
+            if (studentActiveDevice) {
+              studentActiveDevice.deviceId = cleanDeviceId;
+              studentActiveDevice.lastUsedAt = new Date();
+              await studentActiveDevice.save();
+              console.log(`[DEVICE REGISTER] Updated device binding for student: ${user.email} (${user._id}) to ${cleanDeviceId}`);
+            } else {
+              await StudentDevice.create({
+                studentId: user._id,
+                deviceId: cleanDeviceId,
+                isActive: true,
+                registeredAt: new Date(),
+                lastUsedAt: new Date()
+              });
+              console.log(`[DEVICE REGISTER] New device registered for student: ${user.email} (${user._id})`);
+            }
+          } else {
+            console.log(`[DEVICE CHECK] Bound student exists: ${boundStudent.email} (${boundStudent._id})`);
+            console.log(`[DEVICE CHECK] Different student + device rejected. Bound student: ${boundStudent.email}, Attempted student: ${user.email}`);
+
+            return res.status(403).json({
+              message: 'This device is already registered to another student. Please contact your administrator to reset the device.'
+            });
+          }
+        } else {
+          // 3. No active device record exists for this device.
+          // Check if current student has an active device with another deviceId
           const studentActiveDevice = await StudentDevice.findOne({ studentId: user._id, isActive: true });
           if (studentActiveDevice) {
             studentActiveDevice.deviceId = cleanDeviceId;
             studentActiveDevice.lastUsedAt = new Date();
             await studentActiveDevice.save();
-            console.log(`[DEVICE UPDATE] Updated student ${user.email} active device to ${cleanDeviceId}`);
+            console.log(`[DEVICE REGISTER] Updated device binding for student: ${user.email} (${user._id}) to ${cleanDeviceId}`);
           } else {
+            // First time registration
             await StudentDevice.create({
               studentId: user._id,
               deviceId: cleanDeviceId,
@@ -99,39 +147,8 @@ export const googleAuth = async (req: Request, res: Response) => {
               registeredAt: new Date(),
               lastUsedAt: new Date()
             });
-            console.log(`[DEVICE REGISTER] Registered new device ${cleanDeviceId} for student ${user.email} (${user._id}).`);
+            console.log(`[DEVICE REGISTER] New device registered for student: ${user.email} (${user._id})`);
           }
-        } else if (String(boundStudent._id) === String(user._id)) {
-          // Same student & same device -> Update lastUsedAt
-          existingDevice.lastUsedAt = new Date();
-          await existingDevice.save();
-          console.log(`[DEVICE CHECK] Student ${user.email} logged in with registered device.`);
-        } else {
-          // Device is bound to ANOTHER active student!
-          console.log(`[DEVICE CHECK] REJECTED: Device ${cleanDeviceId} is bound to student ${boundStudent.name} (${boundStudent.email}, RegNo: ${boundStudent.registerNo}, ID: ${boundStudent._id}). Attempted login by: ${user.name} (${user.email}, ID: ${user._id}).`);
-
-          return res.status(403).json({
-            message: 'This device is already registered to another student. Please contact your administrator to reset the device.'
-          });
-        }
-      } else {
-        // If student already had an old registered device (e.g. app deleted/reinstalled), update to current active device
-        const studentActiveDevice = await StudentDevice.findOne({ studentId: user._id, isActive: true });
-        if (studentActiveDevice) {
-          studentActiveDevice.deviceId = cleanDeviceId;
-          studentActiveDevice.lastUsedAt = new Date();
-          await studentActiveDevice.save();
-          console.log(`[DEVICE UPDATE] Updated student ${user.email} active device to new reinstalled device ${cleanDeviceId}`);
-        } else {
-          // First time registration or post-reset registration!
-          await StudentDevice.create({
-            studentId: user._id,
-            deviceId: cleanDeviceId,
-            isActive: true,
-            registeredAt: new Date(),
-            lastUsedAt: new Date()
-          });
-          console.log(`[DEVICE REGISTER] Registered new device ${cleanDeviceId} for student ${user.email} (${user._id}).`);
         }
       }
     }

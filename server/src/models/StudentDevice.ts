@@ -23,8 +23,15 @@ const StudentDeviceSchema = new Schema<IStudentDevice>(
   { timestamps: true }
 );
 
-// Ensure index for quick queries
-StudentDeviceSchema.index({ studentId: 1, isActive: 1 });
-StudentDeviceSchema.index({ deviceId: 1, isActive: 1 });
+// Ensure unique partial index so only ONE active record can exist per deviceId and per studentId
+StudentDeviceSchema.index(
+  { deviceId: 1 },
+  { unique: true, partialFilterExpression: { isActive: true } }
+);
+
+StudentDeviceSchema.index(
+  { studentId: 1 },
+  { unique: true, partialFilterExpression: { isActive: true } }
+);
 
 export const StudentDevice = mongoose.model<IStudentDevice>('StudentDevice', StudentDeviceSchema);
