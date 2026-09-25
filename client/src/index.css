@@ -1,26 +1,26 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --bg-dark: #090d16;
-  --bg-card: rgba(18, 24, 38, 0.75);
-  --bg-glass: rgba(255, 255, 255, 0.04);
-  --border-glass: rgba(255, 255, 255, 0.12);
-  --border-glow: rgba(99, 102, 241, 0.4);
-  
-  --primary: #6366f1;
-  --primary-hover: #4f46e5;
-  --primary-glow: rgba(99, 102, 241, 0.35);
-  
-  --accent-cyan: #06b6d4;
-  --accent-emerald: #10b981;
-  --accent-rose: #f43f5e;
-  --accent-amber: #f59e0b;
+  --bg-page: #F7FBF8;
+  --bg-card: #FFFFFF;
+  --bg-pale: #EEF9F2;
+  --bg-light: #DDF5E8;
 
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --text-dim: #64748b;
+  --primary-green: #0B8F55;
+  --primary-green-hover: #097A48;
+  --success-green: #16A765;
   
-  --font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --text-primary: #10231A;
+  --text-secondary: #66756D;
+
+  --warning-amber: #E9A516;
+  --error-red: #E05252;
+  --error-bg: #FDEEEE;
+
+  --border-light: #E2EDF0;
+  --border-green: rgba(11, 143, 85, 0.2);
+  
+  --font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 * {
@@ -31,53 +31,46 @@
 
 body {
   font-family: var(--font-family);
-  background-color: var(--bg-dark);
-  color: var(--text-main);
+  background-color: var(--bg-page);
+  color: var(--text-primary);
   min-height: 100vh;
   overflow-x: hidden;
-  background-image: 
-    radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.18) 0%, transparent 40%),
-    radial-gradient(circle at 85% 75%, rgba(6, 182, 212, 0.15) 0%, transparent 45%),
-    radial-gradient(circle at 50% 50%, rgba(244, 63, 94, 0.06) 0%, transparent 60%);
-  background-attachment: fixed;
 }
 
-/* Glassmorphism utility card */
+/* White Card Utility */
 .glass-card {
   background: var(--bg-card);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--border-glass);
+  border: 1px solid var(--border-light);
   border-radius: 16px;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease-in-out;
 }
 
 .glass-card:hover {
-  border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 12px 40px 0 rgba(99, 102, 241, 0.15);
+  box-shadow: 0 6px 20px rgba(11, 143, 85, 0.06);
 }
 
 .glass-input {
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid var(--border-glass);
-  color: var(--text-main);
+  background: #FFFFFF;
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
   border-radius: 10px;
   padding: 0.75rem 1rem;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   outline: none;
   width: 100%;
   transition: all 0.2s ease;
+  font-family: var(--font-family);
 }
 
 .glass-input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 15px var(--primary-glow);
+  border-color: var(--primary-green);
+  box-shadow: 0 0 0 3px rgba(11, 143, 85, 0.12);
 }
 
 .glass-button {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
-  color: white;
+  background: var(--primary-green);
+  color: #FFFFFF;
   font-weight: 600;
   padding: 0.75rem 1.5rem;
   border-radius: 10px;
@@ -87,20 +80,21 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 15px var(--primary-glow);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(11, 143, 85, 0.2);
+  font-family: var(--font-family);
 }
 
 .glass-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px var(--primary-glow);
-  filter: brightness(1.1);
+  background: var(--primary-green-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(11, 143, 85, 0.3);
 }
 
 .glass-button-outline {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-glass);
-  color: var(--text-main);
+  background: var(--bg-pale);
+  border: 1px solid var(--border-green);
+  color: var(--primary-green);
   font-weight: 600;
   padding: 0.75rem 1.5rem;
   border-radius: 10px;
@@ -110,20 +104,21 @@ body {
   justify-content: center;
   gap: 0.5rem;
   transition: all 0.2s ease;
+  font-family: var(--font-family);
 }
 
 .glass-button-outline:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: var(--bg-light);
+  border-color: var(--primary-green);
 }
 
 /* Badge styles */
 .badge {
-  padding: 0.25rem 0.75rem;
+  padding: 0.3rem 0.75rem;
   border-radius: 20px;
   font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   display: inline-flex;
   align-items: center;
@@ -131,21 +126,21 @@ body {
 }
 
 .badge-active {
-  background: rgba(16, 185, 129, 0.15);
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: var(--bg-light);
+  color: var(--primary-green);
+  border: 1px solid var(--border-green);
 }
 
 .badge-expired {
-  background: rgba(244, 63, 94, 0.15);
-  color: #f87171;
-  border: 1px solid rgba(244, 63, 94, 0.3);
+  background: #F3F4F6;
+  color: #6B7280;
+  border: 1px solid #E5E7EB;
 }
 
 .badge-role {
-  background: rgba(99, 102, 241, 0.15);
-  color: #818cf8;
-  border: 1px solid rgba(99, 102, 241, 0.3);
+  background: var(--bg-pale);
+  color: var(--primary-green);
+  border: 1px solid var(--border-green);
 }
 
 /* Table styling */
@@ -156,54 +151,54 @@ body {
 }
 
 .glass-table th {
-  background: rgba(15, 23, 42, 0.8);
-  color: var(--text-muted);
-  font-weight: 600;
-  font-size: 0.85rem;
+  background: var(--bg-pale);
+  color: var(--text-secondary);
+  font-weight: 700;
+  font-size: 0.82rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  padding: 1rem;
+  padding: 0.9rem 1rem;
   text-align: left;
-  border-bottom: 1px solid var(--border-glass);
+  border-bottom: 1px solid var(--border-light);
 }
 
 .glass-table td {
   padding: 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  color: var(--text-main);
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-primary);
   font-size: 0.92rem;
 }
 
 .glass-table tr:hover td {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bg-pale);
 }
 
-/* Animations */
+/* Active Pulse Animation */
 @keyframes pulseGlow {
   0%, 100% {
-    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+    box-shadow: 0 0 10px rgba(22, 167, 101, 0.2);
   }
   50% {
-    box-shadow: 0 0 25px rgba(16, 185, 129, 0.8);
+    box-shadow: 0 0 20px rgba(22, 167, 101, 0.4);
   }
 }
 
 .pulse-active {
-  animation: pulseGlow 2s infinite ease-in-out;
+  animation: pulseGlow 2.5s infinite ease-in-out;
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.5);
+  background: var(--bg-page);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: #C2D8CD;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.35);
+  background: #0B8F55;
 }

@@ -3,7 +3,7 @@ import * as XLSX from 'xlsx';
 import api from '../services/api';
 import {
   LayoutDashboard, Users, Calendar, FileText, Wifi, Settings, Plus,
-  Trash2, Search, Download, Upload, Play, StopCircle, CheckCircle, XCircle, Clock, ShieldCheck
+  Trash2, Search, Download, Upload, Play, StopCircle, CheckCircle, XCircle, Clock, ShieldCheck, Info
 } from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
@@ -129,7 +129,6 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-
   const handleEndDailyAttendance = async () => {
     if (!window.confirm('Are you sure you want to close today\'s attendance early?')) return;
     try {
@@ -172,7 +171,6 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
-
   const handleExcelImport = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!excelFile) return alert('Select an Excel file first');
@@ -196,7 +194,6 @@ export const AdminDashboard: React.FC = () => {
     const headers = [['Name', 'Register Number', 'Department', 'Year', 'Section', 'Email']];
     const worksheet = XLSX.utils.aoa_to_sheet(headers);
 
-    // Set column widths
     worksheet['!cols'] = [
       { wch: 22 }, // Name
       { wch: 22 }, // Register Number
@@ -208,7 +205,6 @@ export const AdminDashboard: React.FC = () => {
 
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Students');
-
     XLSX.writeFile(workbook, 'Elite_Attendance_Student_Import_Template.xlsx');
   };
 
@@ -235,13 +231,28 @@ export const AdminDashboard: React.FC = () => {
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
-
   return (
-    <div style={{ display: 'flex', minHeight: 'calc(100vh - 70px)' }}>
+    <div style={{ display: 'flex', minHeight: 'calc(100vh - 70px)', background: '#F7FBF8' }}>
       
-      {/* Sidebar Navigation */}
-      <aside className="glass-card" style={{ width: '260px', borderRadius: 0, borderTop: 0, borderBottom: 0, borderLeft: 0, padding: '1.5rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', flexShrink: 0 }}>
-        <div style={{ padding: '0.5rem 1rem', marginBottom: '1rem', fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-dim)', letterSpacing: '0.1em' }}>
+      {/* ── SIDEBAR NAVIGATION ── */}
+      <aside style={{
+        width: '260px',
+        background: '#FFFFFF',
+        borderRight: '1px solid #E2EDF0',
+        padding: '1.5rem 1rem',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0.4rem',
+        flexShrink: 0
+      }}>
+        <div style={{
+          padding: '0.5rem 0.85rem',
+          marginBottom: '0.75rem',
+          fontSize: '0.75rem',
+          fontWeight: 800,
+          color: '#66756D',
+          letterSpacing: '0.08em'
+        }}>
           ADMIN MENU
         </div>
 
@@ -252,32 +263,39 @@ export const AdminDashboard: React.FC = () => {
             <button
               key={item.id}
               onClick={() => setActiveSection(item.id as any)}
-              className={isActive ? 'glass-button' : 'glass-button-outline'}
               style={{
                 width: '100%',
-                justifyContent: 'flex-start',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
                 padding: '0.85rem 1rem',
                 fontSize: '0.9rem',
-                borderRadius: '12px'
+                fontWeight: isActive ? 700 : 600,
+                borderRadius: '12px',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                background: isActive ? '#DDF5E8' : 'transparent',
+                color: isActive ? '#0B8F55' : '#66756D',
               }}
             >
-              <Icon size={18} />
+              <Icon size={18} color={isActive ? '#0B8F55' : '#66756D'} />
               <span>{item.label}</span>
             </button>
           );
         })}
       </aside>
 
-      {/* Content Body */}
+      {/* ── CONTENT BODY ── */}
       <main style={{ flex: 1, padding: '2rem', overflowY: 'auto' }}>
         
         {/* Section Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
           <div>
-            <h1 style={{ fontSize: '1.75rem', fontWeight: 800, textTransform: 'capitalize' }}>
+            <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#10231A', textTransform: 'capitalize' }}>
               {activeSection === 'daily' ? 'Daily Attendance' : activeSection.replace('-', ' ')}
             </h1>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+            <p style={{ color: '#66756D', fontSize: '0.9rem', marginTop: '0.2rem' }}>
               Elite Class Portal Administrative Panel
             </p>
           </div>
@@ -285,16 +303,16 @@ export const AdminDashboard: React.FC = () => {
           <div style={{ display: 'flex', gap: '0.75rem' }}>
             {(activeSection === 'students' || activeSection === 'wifi') && (
               <button className="glass-button" onClick={() => setShowModal(true)} style={{ fontSize: '0.85rem' }}>
-                <Plus size={16} /> Add {activeSection.slice(0, -1)}
+                <Plus size={16} /> Add {activeSection === 'students' ? 'Student' : 'Access Point'}
               </button>
             )}
             {activeSection === 'reports' && (
               <>
                 <button className="glass-button-outline" onClick={() => handleExport('excel')} style={{ fontSize: '0.85rem' }}>
-                  <Download size={16} color="#34d399" /> Download Excel
+                  <Download size={16} color="#0B8F55" /> Download Excel
                 </button>
                 <button className="glass-button-outline" onClick={() => handleExport('pdf')} style={{ fontSize: '0.85rem' }}>
-                  <Download size={16} color="#f87171" /> Download PDF
+                  <Download size={16} color="#E05252" /> Download PDF
                 </button>
               </>
             )}
@@ -305,43 +323,44 @@ export const AdminDashboard: React.FC = () => {
         {activeSection === 'dashboard' && (
           <div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
+              
               <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div style={{ padding: '12px', borderRadius: '12px', background: 'rgba(99, 102, 241, 0.15)', color: '#818cf8' }}>
-                  <Users size={32} />
+                <div style={{ padding: '12px', borderRadius: '14px', background: '#EEF9F2', color: '#0B8F55' }}>
+                  <Users size={28} />
                 </div>
                 <div>
-                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Registered Students</p>
-                  <h2 style={{ fontSize: '1.8rem', fontWeight: 800 }}>{studentCount}</h2>
+                  <p style={{ fontSize: '0.85rem', color: '#66756D', fontWeight: 500 }}>Registered Students</p>
+                  <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#10231A' }}>{studentCount}</h2>
                 </div>
               </div>
 
               <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div style={{ padding: '12px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.15)', color: '#34d399' }}>
-                  <CheckCircle size={32} />
+                <div style={{ padding: '12px', borderRadius: '14px', background: '#DDF5E8', color: '#16A765' }}>
+                  <CheckCircle size={28} />
                 </div>
                 <div>
-                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Present Today</p>
-                  <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#34d399' }}>{todayOverview?.stats?.presentCount || 0}</h2>
+                  <p style={{ fontSize: '0.85rem', color: '#66756D', fontWeight: 500 }}>Present Today</p>
+                  <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#16A765' }}>{todayOverview?.stats?.presentCount || 0}</h2>
                 </div>
               </div>
 
               <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div style={{ padding: '12px', borderRadius: '12px', background: 'rgba(244, 63, 94, 0.15)', color: '#f87171' }}>
-                  <XCircle size={32} />
+                <div style={{ padding: '12px', borderRadius: '14px', background: '#FDEEEE', color: '#E05252' }}>
+                  <XCircle size={28} />
                 </div>
                 <div>
-                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Absent Today</p>
-                  <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#f87171' }}>{todayOverview?.stats?.absentCount || 0}</h2>
+                  <p style={{ fontSize: '0.85rem', color: '#66756D', fontWeight: 500 }}>Absent Today</p>
+                  <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#E05252' }}>{todayOverview?.stats?.absentCount || 0}</h2>
                 </div>
               </div>
 
               <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div style={{ padding: '12px', borderRadius: '12px', background: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24' }}>
-                  <Clock size={32} />
+                <div style={{ padding: '12px', borderRadius: '14px', background: '#FFF9E6', color: '#E9A516' }}>
+                  <Clock size={28} />
                 </div>
                 <div>
-                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Remaining Time</p>
-                  <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: timeLeft < 60 ? '#f87171' : '#34d399' }}>
+                  <p style={{ fontSize: '0.85rem', color: '#66756D', fontWeight: 500 }}>Remaining Time</p>
+                  <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: timeLeft < 60 && timeLeft > 0 ? '#E05252' : '#0B8F55' }}>
                     {formatTime(timeLeft)}
                   </h2>
                 </div>
@@ -350,36 +369,35 @@ export const AdminDashboard: React.FC = () => {
 
             {/* Today's Live Banner */}
             {todayOverview?.settings?.status === 'ACTIVE' ? (
-              <div className="glass-card pulse-active" style={{ padding: '2rem', marginBottom: '2rem' }}>
+              <div className="glass-card pulse-active" style={{ padding: '2rem', marginBottom: '2rem', background: '#EEF9F2', borderColor: 'rgba(11, 143, 85, 0.3)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
                     <span className="badge badge-active">TODAY'S ATTENDANCE ACTIVE</span>
-                    <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '0.5rem', color: '#818cf8' }}>
+                    <h3 style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '0.5rem', color: '#0B8F55' }}>
                       Date: {todayOverview.settings.attendanceDate}
                     </h3>
-                    <p style={{ color: 'var(--text-muted)' }}>
-                      Window: {new Date(todayOverview.settings.startTime).toLocaleTimeString()} - {new Date(todayOverview.settings.endTime).toLocaleTimeString()}
+                    <p style={{ color: '#66756D', marginTop: '0.25rem', fontSize: '0.9rem' }}>
+                      Window: {new Date(todayOverview.settings.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })} - {new Date(todayOverview.settings.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
                       {todayOverview.settings.wifiLocation && (
-                        <span> • Location: <strong style={{ color: '#fbbf24' }}>{todayOverview.settings.wifiLocation}</strong></span>
+                        <span> • Location: <strong style={{ color: '#10231A' }}>{todayOverview.settings.wifiLocation}</strong></span>
                       )}
                     </p>
-
                   </div>
 
                   <div style={{ textAlign: 'right' }}>
-                    <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#34d399' }}>
+                    <h2 style={{ fontSize: '2.2rem', fontWeight: 800, color: '#0B8F55' }}>
                       {todayOverview.stats.presentCount} / {todayOverview.stats.total}
                     </h2>
-                    <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Students Present ({todayOverview.stats.percentage}%)</p>
+                    <p style={{ fontSize: '0.85rem', color: '#66756D', fontWeight: 600 }}>Students Present ({todayOverview.stats.percentage}%)</p>
                   </div>
                 </div>
               </div>
             ) : (
               <div className="glass-card" style={{ padding: '2.5rem', textAlign: 'center' }}>
-                <Calendar size={48} color="#64748b" style={{ marginBottom: '1rem', opacity: 0.5 }} />
-                <h3>No Active Attendance Today</h3>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.25rem' }}>
-                  Go to "Daily Attendance" in the sidebar to configure and open today's attendance window.
+                <Calendar size={48} color="#0B8F55" style={{ marginBottom: '1rem', opacity: 0.4 }} />
+                <h3 style={{ color: '#10231A', fontWeight: 700 }}>No Active Attendance Session</h3>
+                <p style={{ color: '#66756D', fontSize: '0.9rem', marginTop: '0.35rem' }}>
+                  Go to <strong>Daily Attendance</strong> in the sidebar to configure and launch today's official attendance session.
                 </p>
               </div>
             )}
@@ -391,30 +409,38 @@ export const AdminDashboard: React.FC = () => {
           <div className="glass-card" style={{ padding: '1.5rem' }}>
             
             {/* Excel Upload Row */}
-            <div style={{ padding: '1.25rem', borderRadius: '12px', background: 'rgba(99, 102, 241, 0.1)', border: '1px solid rgba(99, 102, 241, 0.2)', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <div style={{
+              padding: '1.25rem',
+              borderRadius: '14px',
+              background: '#EEF9F2',
+              border: '1px solid rgba(11, 143, 85, 0.2)',
+              marginBottom: '1.5rem',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '1rem'
+            }}>
               <div>
-                <h4 style={{ color: '#818cf8', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                <h4 style={{ color: '#0B8F55', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem', fontWeight: 700 }}>
                   <Upload size={18} /> Bulk Import Students from Excel (.xlsx)
                 </h4>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                  Upload Excel spreadsheet containing Columns: Name, Register Number, Department, Year, Section, Email.
+                <p style={{ fontSize: '0.85rem', color: '#66756D' }}>
+                  Upload Excel spreadsheet with columns: Name, Register Number, Department, Year, Section, Email.
                 </p>
               </div>
 
-              <form onSubmit={handleExcelImport} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              <form onSubmit={handleExcelImport} style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
                 <button
                   type="button"
                   onClick={handleDownloadTemplate}
-                  className="glass-button"
+                  className="glass-button-outline"
                   style={{
                     fontSize: '0.85rem',
                     padding: '0.5rem 1rem',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.4rem',
-                    background: 'rgba(99, 102, 241, 0.2)',
-                    borderColor: 'rgba(99, 102, 241, 0.4)',
-                    color: '#a5b4fc'
+                    gap: '0.4rem'
                   }}
                 >
                   <Download size={16} /> Download Excel Template
@@ -432,10 +458,10 @@ export const AdminDashboard: React.FC = () => {
               </form>
             </div>
 
-            {/* Filter */}
+            {/* Filter Row */}
             <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
               <div style={{ position: 'relative', flex: 1 }}>
-                <Search size={18} color="#64748b" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                <Search size={18} color="#66756D" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
                 <input
                   type="text"
                   placeholder="Search students by name, reg no, or email..."
@@ -469,9 +495,9 @@ export const AdminDashboard: React.FC = () => {
               <tbody>
                 {students.map((s) => (
                   <tr key={s._id}>
-                    <td style={{ fontWeight: 700, color: '#818cf8' }}>{s.registerNo || s.rollNo}</td>
-                    <td style={{ fontWeight: 600 }}>{s.name}</td>
-                    <td style={{ color: '#34d399' }}>{s.email}</td>
+                    <td style={{ fontWeight: 700, color: '#0B8F55' }}>{s.registerNo || s.rollNo}</td>
+                    <td style={{ fontWeight: 600, color: '#10231A' }}>{s.name}</td>
+                    <td style={{ color: '#66756D' }}>{s.email}</td>
                     <td><span className="badge badge-role">{s.department}</span></td>
                     <td>Year {s.year} - {s.section}</td>
                     <td>
@@ -488,13 +514,13 @@ export const AdminDashboard: React.FC = () => {
                             }
                           }
                         }}
-                        style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem', color: '#fbbf24', borderColor: 'rgba(245, 158, 11, 0.4)' }}
+                        style={{ fontSize: '0.75rem', padding: '0.35rem 0.7rem', color: '#E9A516', borderColor: 'rgba(233, 165, 22, 0.4)', background: '#FFF9E6' }}
                       >
                         Reset Device
                       </button>
                     </td>
                     <td>
-                      <button onClick={() => handleDelete(s._id, 'student')} style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer' }}>
+                      <button onClick={() => handleDelete(s._id, 'student')} style={{ background: 'none', border: 'none', color: '#E05252', cursor: 'pointer', padding: '4px' }}>
                         <Trash2 size={18} />
                       </button>
                     </td>
@@ -502,7 +528,6 @@ export const AdminDashboard: React.FC = () => {
                 ))}
               </tbody>
             </table>
-
 
           </div>
         )}
@@ -513,13 +538,18 @@ export const AdminDashboard: React.FC = () => {
             
             {/* Form */}
             <div className="glass-card" style={{ padding: '2rem' }}>
-              <h3 style={{ fontSize: '1.3rem', fontWeight: 800, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Calendar color="#818cf8" /> Configure Today's Attendance
+              <h3 style={{ fontSize: '1.3rem', fontWeight: 800, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#10231A' }}>
+                <Calendar color="#0B8F55" /> Configure Today's Attendance
               </h3>
+              
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem', borderRadius: '10px', background: '#EEF9F2', color: '#0B8F55', fontSize: '0.82rem', marginBottom: '1.5rem' }}>
+                <Info size={16} />
+                <span>Each configured attendance session counts as 1 official class day in student percentage calculations.</span>
+              </div>
 
               <form onSubmit={handleStartDailyAttendance} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#66756D', fontWeight: 600, marginBottom: '0.4rem' }}>
                     Attendance Date
                   </label>
                   <input
@@ -532,7 +562,7 @@ export const AdminDashboard: React.FC = () => {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#66756D', fontWeight: 600, marginBottom: '0.4rem' }}>
                     Start Time
                   </label>
                   <input
@@ -545,7 +575,7 @@ export const AdminDashboard: React.FC = () => {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#66756D', fontWeight: 600, marginBottom: '0.4rem' }}>
                     End Time
                   </label>
                   <input
@@ -558,7 +588,7 @@ export const AdminDashboard: React.FC = () => {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.4rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.85rem', color: '#66756D', fontWeight: 600, marginBottom: '0.4rem' }}>
                     Authorized Wi-Fi Location / Access Point *
                   </label>
                   <select
@@ -576,15 +606,13 @@ export const AdminDashboard: React.FC = () => {
                   </select>
                 </div>
 
-
-
                 <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
                   <button type="submit" className="glass-button" style={{ flex: 1 }}>
                     <Play size={18} /> Start Attendance
                   </button>
 
                   {todayOverview?.settings?.status === 'ACTIVE' && (
-                    <button type="button" onClick={handleEndDailyAttendance} className="glass-button-outline" style={{ color: '#f87171', borderColor: 'rgba(244,63,94,0.4)' }}>
+                    <button type="button" onClick={handleEndDailyAttendance} className="glass-button-outline" style={{ color: '#E05252', borderColor: 'rgba(224,82,82,0.4)', background: '#FDEEEE' }}>
                       <StopCircle size={18} /> Close Attendance
                     </button>
                   )}
@@ -595,7 +623,7 @@ export const AdminDashboard: React.FC = () => {
             {/* Today's Roster Monitor */}
             <div className="glass-card" style={{ padding: '2rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#818cf8' }}>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#10231A' }}>
                   Today's Attendance Overview
                 </h3>
                 {todayOverview?.settings?.status === 'ACTIVE' ? (
@@ -606,28 +634,28 @@ export const AdminDashboard: React.FC = () => {
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem', marginBottom: '1.5rem' }}>
-                <div style={{ padding: '0.85rem', borderRadius: '10px', background: 'rgba(16, 185, 129, 0.1)', textAlign: 'center' }}>
-                  <p style={{ fontSize: '0.7rem', color: '#34d399', fontWeight: 700 }}>PRESENT</p>
-                  <h3 style={{ fontSize: '1.5rem', color: '#34d399', fontWeight: 800 }}>{todayOverview?.stats?.presentCount || 0}</h3>
+                <div style={{ padding: '0.85rem', borderRadius: '12px', background: '#DDF5E8', textAlign: 'center' }}>
+                  <p style={{ fontSize: '0.7rem', color: '#16A765', fontWeight: 700 }}>PRESENT</p>
+                  <h3 style={{ fontSize: '1.5rem', color: '#16A765', fontWeight: 800 }}>{todayOverview?.stats?.presentCount || 0}</h3>
                 </div>
-                <div style={{ padding: '0.85rem', borderRadius: '10px', background: 'rgba(244, 63, 94, 0.1)', textAlign: 'center' }}>
-                  <p style={{ fontSize: '0.7rem', color: '#f87171', fontWeight: 700 }}>ABSENT</p>
-                  <h3 style={{ fontSize: '1.5rem', color: '#f87171', fontWeight: 800 }}>{todayOverview?.stats?.absentCount || 0}</h3>
+                <div style={{ padding: '0.85rem', borderRadius: '12px', background: '#FDEEEE', textAlign: 'center' }}>
+                  <p style={{ fontSize: '0.7rem', color: '#E05252', fontWeight: 700 }}>ABSENT</p>
+                  <h3 style={{ fontSize: '1.5rem', color: '#E05252', fontWeight: 800 }}>{todayOverview?.stats?.absentCount || 0}</h3>
                 </div>
-                <div style={{ padding: '0.85rem', borderRadius: '10px', background: 'rgba(99, 102, 241, 0.1)', textAlign: 'center' }}>
-                  <p style={{ fontSize: '0.7rem', color: '#818cf8', fontWeight: 700 }}>REMAINING</p>
-                  <h3 style={{ fontSize: '1.2rem', color: timeLeft < 60 ? '#f87171' : '#818cf8', fontWeight: 800 }}>{formatTime(timeLeft)}</h3>
+                <div style={{ padding: '0.85rem', borderRadius: '12px', background: '#EEF9F2', textAlign: 'center' }}>
+                  <p style={{ fontSize: '0.7rem', color: '#0B8F55', fontWeight: 700 }}>REMAINING</p>
+                  <h3 style={{ fontSize: '1.2rem', color: timeLeft < 60 && timeLeft > 0 ? '#E05252' : '#0B8F55', fontWeight: 800 }}>{formatTime(timeLeft)}</h3>
                 </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div>
-                  <h4 style={{ color: '#34d399', fontSize: '0.85rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <h4 style={{ color: '#16A765', fontSize: '0.85rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 700 }}>
                     <CheckCircle size={14} /> Present ({todayOverview?.presentStudents?.length || 0})
                   </h4>
                   <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
                     {todayOverview?.presentStudents?.map((p: any) => (
-                      <div key={p._id} style={{ fontSize: '0.8rem', padding: '0.35rem 0', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <div key={p._id} style={{ fontSize: '0.8rem', padding: '0.35rem 0', borderBottom: '1px solid #E2EDF0', color: '#10231A' }}>
                         {p.name} ({p.registerNo || p.rollNo})
                       </div>
                     ))}
@@ -635,12 +663,12 @@ export const AdminDashboard: React.FC = () => {
                 </div>
 
                 <div>
-                  <h4 style={{ color: '#f87171', fontSize: '0.85rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <h4 style={{ color: '#E05252', fontSize: '0.85rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.35rem', fontWeight: 700 }}>
                     <XCircle size={14} /> Absent ({todayOverview?.absentStudents?.length || 0})
                   </h4>
                   <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
                     {todayOverview?.absentStudents?.map((a: any) => (
-                      <div key={a._id} style={{ fontSize: '0.8rem', padding: '0.35rem 0', borderBottom: '1px solid rgba(255,255,255,0.05)', color: 'var(--text-muted)' }}>
+                      <div key={a._id} style={{ fontSize: '0.8rem', padding: '0.35rem 0', borderBottom: '1px solid #E2EDF0', color: '#66756D' }}>
                         {a.name} ({a.registerNo || a.rollNo})
                       </div>
                     ))}
@@ -658,7 +686,7 @@ export const AdminDashboard: React.FC = () => {
           <div className="glass-card" style={{ padding: '1.5rem' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>Department</label>
+                <label style={{ display: 'block', fontSize: '0.8rem', color: '#66756D', fontWeight: 600, marginBottom: '0.3rem' }}>Department</label>
                 <select value={deptFilter} onChange={(e) => setDeptFilter(e.target.value)} className="glass-input">
                   <option value="">All Departments</option>
                   <option value="CSE">CSE</option>
@@ -668,12 +696,12 @@ export const AdminDashboard: React.FC = () => {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>Daily Date Filter</label>
+                <label style={{ display: 'block', fontSize: '0.8rem', color: '#66756D', fontWeight: 600, marginBottom: '0.3rem' }}>Daily Date Filter</label>
                 <input type="date" value={reportDate} onChange={(e) => { setReportDate(e.target.value); setReportMonth(''); }} className="glass-input" />
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>Monthly Filter (YYYY-MM)</label>
+                <label style={{ display: 'block', fontSize: '0.8rem', color: '#66756D', fontWeight: 600, marginBottom: '0.3rem' }}>Monthly Filter (YYYY-MM)</label>
                 <input type="month" value={reportMonth} onChange={(e) => { setReportMonth(e.target.value); setReportDate(''); }} className="glass-input" />
               </div>
             </div>
@@ -692,11 +720,11 @@ export const AdminDashboard: React.FC = () => {
               <tbody>
                 {reports.map((r) => (
                   <tr key={r._id}>
-                    <td style={{ fontWeight: 700 }}>{r.studentId?.registerNo || r.studentId?.rollNo || 'N/A'}</td>
-                    <td>{r.studentId?.name || 'N/A'}</td>
-                    <td>{r.studentId?.email || 'N/A'}</td>
+                    <td style={{ fontWeight: 700, color: '#0B8F55' }}>{r.studentId?.registerNo || r.studentId?.rollNo || 'N/A'}</td>
+                    <td style={{ color: '#10231A', fontWeight: 600 }}>{r.studentId?.name || 'N/A'}</td>
+                    <td style={{ color: '#66756D' }}>{r.studentId?.email || 'N/A'}</td>
                     <td>{r.attendanceDate}</td>
-                    <td style={{ color: '#34d399' }}>{new Date(r.checkInTime).toLocaleTimeString()}</td>
+                    <td style={{ color: '#16A765', fontWeight: 600 }}>{new Date(r.checkInTime).toLocaleTimeString()}</td>
                     <td><span className="badge badge-active">{r.status}</span></td>
                   </tr>
                 ))}
@@ -721,12 +749,12 @@ export const AdminDashboard: React.FC = () => {
               <tbody>
                 {wifiAPs.map((w) => (
                   <tr key={w._id}>
-                    <td style={{ fontWeight: 700, color: '#fbbf24' }}>{w.ssid}</td>
-                    <td style={{ fontFamily: 'monospace', color: 'var(--text-muted)' }}>{w.bssid}</td>
-                    <td>{w.location}</td>
+                    <td style={{ fontWeight: 700, color: '#0B8F55' }}>{w.ssid}</td>
+                    <td style={{ fontFamily: 'monospace', color: '#66756D' }}>{w.bssid}</td>
+                    <td style={{ color: '#10231A' }}>{w.location}</td>
                     <td><span className="badge badge-active">ACTIVE</span></td>
                     <td>
-                      <button onClick={() => handleDelete(w._id, 'wifi')} style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer' }}>
+                      <button onClick={() => handleDelete(w._id, 'wifi')} style={{ background: 'none', border: 'none', color: '#E05252', cursor: 'pointer', padding: '4px' }}>
                         <Trash2 size={18} />
                       </button>
                     </td>
@@ -740,13 +768,13 @@ export const AdminDashboard: React.FC = () => {
         {/* 6. Settings */}
         {activeSection === 'settings' && (
           <div className="glass-card" style={{ padding: '2rem', maxWidth: '600px' }}>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <ShieldCheck color="#818cf8" /> Google OAuth 2.0 Authentication Settings
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#10231A' }}>
+              <ShieldCheck color="#0B8F55" /> Google OAuth 2.0 Authentication Settings
             </h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: '1.5', marginBottom: '1.5rem' }}>
+            <p style={{ color: '#66756D', fontSize: '0.9rem', lineHeight: '1.5', marginBottom: '1.5rem' }}>
               System is secured by Google OAuth 2.0. Any user whose Google email address has been added by the Administrator can log in directly using Google Sign-In.
             </p>
-            <div style={{ padding: '1rem', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', color: '#34d399', fontSize: '0.85rem' }}>
+            <div style={{ padding: '1rem', borderRadius: '12px', background: '#DDF5E8', border: '1px solid rgba(11, 143, 85, 0.3)', color: '#0B8F55', fontSize: '0.85rem', fontWeight: 600 }}>
               ✓ Google OAuth 2.0 Guard: ACTIVE (Registered Admin Emails Allowed)
             </div>
           </div>
@@ -758,11 +786,11 @@ export const AdminDashboard: React.FC = () => {
       {showModal && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)',
+          background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem'
         }}>
-          <div className="glass-card" style={{ maxWidth: '500px', width: '100%', padding: '2rem' }}>
-            <h3 style={{ marginBottom: '1.5rem', textTransform: 'capitalize' }}>Add New {activeSection.slice(0, -1)}</h3>
+          <div className="glass-card" style={{ maxWidth: '500px', width: '100%', padding: '2rem', background: '#FFFFFF' }}>
+            <h3 style={{ marginBottom: '1.5rem', textTransform: 'capitalize', color: '#10231A', fontWeight: 800 }}>Add New {activeSection === 'students' ? 'Student' : 'Access Point'}</h3>
 
             <form onSubmit={handleCreateSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {activeSection === 'students' && (
@@ -783,7 +811,6 @@ export const AdminDashboard: React.FC = () => {
                   </div>
                 </>
               )}
-
 
               {activeSection === 'wifi' && (
                 <>

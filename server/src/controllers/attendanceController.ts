@@ -349,7 +349,7 @@ export const getStudentTodayStatus = async (req: AuthRequest, res: Response) => 
     const totalAttendedDays = await Attendance.countDocuments({ studentId, status: 'PRESENT' });
     const percentage = totalDaysConfigured > 0
       ? ((totalAttendedDays / totalDaysConfigured) * 100).toFixed(1)
-      : '100.0';
+      : '0.0';
 
     return res.json({
       settings,
