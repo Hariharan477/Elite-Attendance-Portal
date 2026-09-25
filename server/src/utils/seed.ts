@@ -70,11 +70,38 @@ export const seedDatabase = async () => {
     await User.deleteMany({ role: 'student', email: { $regex: '^student[0-9]+@' } });
 
     console.log('[Seeder] Database initialized with Admin accounts. Demo students cleared.');
+
+    // Safe startup cleanup of orphaned StudentDevice records
+    await cleanupOrphanedDevices();
   } catch (error) {
     console.error('[Seeder] Error seeding database:', error);
   }
 };
 
+export const cleanupOrphanedDevices = async () => {
+  try {
+    const { StudentDevice } = await import('../models/StudentDevice');
+    const allDevices = await StudentDevice.find({});
+    let deletedCount = 0;
+
+    for (const dev of allDevices) {
+      const studentExists = await User.exists({ _id: dev.studentId });
+      if (!studentExists) {
+        await StudentDevice.deleteOne({ _id: dev._id });
+        deletedCount++;
+        console.log(`[DEVICE CLEANUP] Removed orphaned device ${dev.deviceId} (studentId: ${dev.studentId})`);
+      }
+    }
+
+    if (deletedCount > 0) {
+      console.log(`[DEVICE CLEANUP] Startup cleanup completed. Removed ${deletedCount} orphaned device record(s).`);
+    } else {
+      console.log(`[DEVICE CLEANUP] Startup check passed. No orphaned device records found.`);
+    }
+  } catch (error) {
+    console.error('[DEVICE CLEANUP] Error during startup device cleanup:', error);
+  }
+};
 
 if (require.main === module) {
   seedDatabase().then(() => mongoose.disconnect());
