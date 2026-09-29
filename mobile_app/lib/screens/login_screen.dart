@@ -26,9 +26,11 @@ class _LoginScreenState extends State<LoginScreen> {
   static const _bgColor = Color(0xFFF7FBF8);
   static const _cardColor = Color(0xFFFFFFFF);
   static const _primaryGreen = Color(0xFF0B8F55);
+  static const _lightGreen = Color(0xFFDDF5E8);
   static const _paleGreen = Color(0xFFEEF9F2);
   static const _textPrimary = Color(0xFF10231A);
   static const _textSecondary = Color(0xFF66756D);
+  static const _borderSubtle = Color(0xFFE2EFE7);
   static const _errorColor = Color(0xFFE05252);
 
   Future<void> _handleGoogleSignIn() async {
@@ -91,62 +93,76 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // ── LOGO ──
+                // ── GREEN-THEMED SHIELD LOGO ──
                 Container(
-                  width: 72,
-                  height: 72,
+                  width: 76,
+                  height: 76,
                   decoration: BoxDecoration(
                     color: _paleGreen,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: _primaryGreen.withValues(alpha: 0.2), width: 1.5),
+                    borderRadius: BorderRadius.circular(22),
+                    border: Border.all(
+                      color: _lightGreen,
+                      width: 1.5,
+                    ),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x0A0B8F55),
+                        blurRadius: 16,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
                   ),
                   child: const Center(
                     child: Icon(
                       Icons.shield_rounded,
-                      size: 38,
+                      size: 40,
                       color: _primaryGreen,
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
 
-                // ── TITLE ──
+                // ── TITLE & SUBTITLE ──
                 RichText(
+                  textAlign: TextAlign.center,
                   text: TextSpan(
                     children: [
                       TextSpan(
                         text: 'Elite ',
                         style: GoogleFonts.inter(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
                           color: _textPrimary,
+                          letterSpacing: -0.5,
                         ),
                       ),
                       TextSpan(
-                        text: 'Attendance',
+                        text: 'Class Portal',
                         style: GoogleFonts.inter(
-                          fontSize: 26,
+                          fontSize: 28,
                           fontWeight: FontWeight.w800,
                           color: _primaryGreen,
+                          letterSpacing: -0.5,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Text(
-                  'Student Attendance Portal',
+                  'Smart Attendance Management System',
+                  textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     fontSize: 14,
                     color: _textSecondary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 36),
 
                 // ── LOGIN CARD ──
                 Container(
@@ -154,12 +170,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   padding: const EdgeInsets.all(28),
                   decoration: BoxDecoration(
                     color: _cardColor,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: _borderSubtle, width: 1),
+                    boxShadow: const [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 16,
-                        offset: const Offset(0, 4),
+                        color: Color(0x0C0B8F55),
+                        blurRadius: 24,
+                        offset: Offset(0, 8),
                       ),
                     ],
                   ),
@@ -180,6 +197,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: GoogleFonts.inter(
                           fontSize: 13,
                           color: _textSecondary,
+                          height: 1.4,
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -190,58 +208,42 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: 20),
                       ],
 
-                      // Google Sign In CTA Button
+                      // Clean White Google Sign-In CTA Button
                       SizedBox(
                         width: double.infinity,
                         height: 52,
-                        child: ElevatedButton(
+                        child: OutlinedButton(
                           onPressed: _isLoading ? null : _handleGoogleSignIn,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: _primaryGreen,
-                            foregroundColor: Colors.white,
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: _textPrimary,
+                            side: const BorderSide(color: _borderSubtle, width: 1.5),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
                             ),
-                            elevation: 2,
-                            shadowColor: _primaryGreen.withValues(alpha: 0.3),
+                            elevation: 0,
+                            shadowColor: Colors.black.withValues(alpha: 0.05),
                           ),
                           child: _isLoading
                               ? const SizedBox(
                                   width: 22,
                                   height: 22,
                                   child: CircularProgressIndicator(
-                                    color: Colors.white,
+                                    color: _primaryGreen,
                                     strokeWidth: 2.5,
                                   ),
                                 )
                               : Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Container(
-                                      width: 26,
-                                      height: 26,
-                                      decoration: const BoxDecoration(
-                                        color: Colors.white,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          'G',
-                                          style: GoogleFonts.inter(
-                                            color: _primaryGreen,
-                                            fontWeight: FontWeight.w900,
-                                            fontSize: 15,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
+                                    const GoogleLogoWidget(size: 22),
                                     const SizedBox(width: 12),
                                     Text(
                                       'Continue with Google',
                                       style: GoogleFonts.inter(
                                         fontSize: 15,
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600,
+                                        color: _textPrimary,
                                       ),
                                     ),
                                   ],
@@ -253,18 +255,23 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 28),
 
-                // ── SECURITY NOTE ──
+                // ── SECURITY FOOTER NOTE ──
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Icon(Icons.shield_outlined, size: 14, color: _textSecondary.withValues(alpha: 0.8)),
-                    const SizedBox(width: 6),
+                    const Icon(
+                      Icons.shield_outlined,
+                      size: 16,
+                      color: _primaryGreen,
+                    ),
+                    const SizedBox(width: 8),
                     Flexible(
                       child: Text(
                         'Secure attendance with account, device & campus Wi-Fi verification.',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.inter(
-                          fontSize: 11,
+                          fontSize: 11.5,
                           color: _textSecondary,
                           fontWeight: FontWeight.w500,
                         ),
@@ -316,3 +323,96 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+
+/// Authentic multi-colored Google vector 'G' logo widget.
+class GoogleLogoWidget extends StatelessWidget {
+  final double size;
+  const GoogleLogoWidget({super.key, this.size = 22.0});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(
+        painter: _GoogleLogoPainter(),
+      ),
+    );
+  }
+}
+
+class _GoogleLogoPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final double scale = size.width / 24.0;
+    canvas.scale(scale, scale);
+
+    // Blue Path (#4285F4)
+    final paintBlue = Paint()
+      ..color = const Color(0xFF4285F4)
+      ..style = PaintingStyle.fill;
+    final pathBlue = Path()
+      ..moveTo(23.49, 12.28)
+      ..cubicTo(23.49, 11.49, 23.42, 10.74, 23.3, 10.0)
+      ..lineTo(12.0, 10.0)
+      ..lineTo(12.0, 14.51)
+      ..lineTo(18.47, 14.51)
+      ..cubicTo(18.18, 15.99, 17.33, 17.24, 16.07, 18.09)
+      ..lineTo(16.07, 21.09)
+      ..lineTo(19.93, 21.09)
+      ..cubicTo(22.19, 19.0, 23.49, 15.92, 23.49, 12.28)
+      ..close();
+    canvas.drawPath(pathBlue, paintBlue);
+
+    // Green Path (#34A853)
+    final paintGreen = Paint()
+      ..color = const Color(0xFF34A853)
+      ..style = PaintingStyle.fill;
+    final pathGreen = Path()
+      ..moveTo(12.0, 24.0)
+      ..cubicTo(15.24, 24.0, 17.95, 22.92, 19.93, 21.09)
+      ..lineTo(16.07, 18.09)
+      ..cubicTo(14.99, 18.81, 13.62, 19.25, 12.0, 19.25)
+      ..cubicTo(8.87, 19.25, 6.22, 17.14, 5.27, 14.29)
+      ..lineTo(1.29, 14.29)
+      ..lineTo(1.29, 17.38)
+      ..cubicTo(3.26, 21.3, 7.31, 24.0, 12.0, 24.0)
+      ..close();
+    canvas.drawPath(pathGreen, paintGreen);
+
+    // Yellow Path (#FBBC05)
+    final paintYellow = Paint()
+      ..color = const Color(0xFFFBBC05)
+      ..style = PaintingStyle.fill;
+    final pathYellow = Path()
+      ..moveTo(5.27, 14.29)
+      ..cubicTo(5.02, 13.57, 4.89, 12.8, 4.89, 12.0)
+      ..cubicTo(4.89, 11.2, 5.02, 10.43, 5.27, 9.71)
+      ..lineTo(5.27, 6.62)
+      ..lineTo(1.29, 6.62)
+      ..cubicTo(0.47, 8.24, 0.0, 10.06, 0.0, 12.0)
+      ..cubicTo(0.0, 13.94, 0.47, 15.76, 1.29, 17.38)
+      ..lineTo(5.27, 14.29)
+      ..close();
+    canvas.drawPath(pathYellow, paintYellow);
+
+    // Red Path (#EA4335)
+    final paintRed = Paint()
+      ..color = const Color(0xFFEA4335)
+      ..style = PaintingStyle.fill;
+    final pathRed = Path()
+      ..moveTo(12.0, 4.75)
+      ..cubicTo(13.77, 4.75, 15.35, 5.36, 16.6, 6.55)
+      ..lineTo(20.02, 3.13)
+      ..cubicTo(17.95, 1.19, 15.24, 0.0, 12.0, 0.0)
+      ..cubicTo(7.31, 0.0, 3.26, 2.7, 1.29, 6.62)
+      ..lineTo(5.27, 9.71)
+      ..cubicTo(6.22, 6.86, 8.87, 4.75, 12.0, 4.75)
+      ..close();
+    canvas.drawPath(pathRed, paintRed);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
