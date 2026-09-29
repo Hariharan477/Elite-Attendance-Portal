@@ -6,6 +6,15 @@ import {
   Trash2, Search, Download, Upload, Play, StopCircle, CheckCircle, XCircle, Clock, ShieldCheck, Info
 } from 'lucide-react';
 
+const formatISTTime = (dateInput: string | number | Date) => {
+  return new Date(dateInput).toLocaleTimeString('en-US', {
+    timeZone: 'Asia/Kolkata',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
+};
+
 export const AdminDashboard: React.FC = () => {
   const [activeSection, setActiveSection] = useState<'dashboard' | 'students' | 'daily' | 'reports' | 'wifi' | 'settings'>('dashboard');
 
@@ -377,7 +386,7 @@ export const AdminDashboard: React.FC = () => {
                       Date: {todayOverview.settings.attendanceDate}
                     </h3>
                     <p style={{ color: '#66756D', marginTop: '0.25rem', fontSize: '0.9rem' }}>
-                      Window: {new Date(todayOverview.settings.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })} - {new Date(todayOverview.settings.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                      Window: {formatISTTime(todayOverview.settings.startTime)} - {formatISTTime(todayOverview.settings.endTime)}
                       {todayOverview.settings.wifiLocation && (
                         <span> • Location: <strong style={{ color: '#10231A' }}>{todayOverview.settings.wifiLocation}</strong></span>
                       )}
@@ -626,12 +635,57 @@ export const AdminDashboard: React.FC = () => {
                 <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#10231A' }}>
                   Today's Attendance Overview
                 </h3>
-                {todayOverview?.settings?.status === 'ACTIVE' ? (
-                  <span className="badge badge-active pulse-active">ACTIVE</span>
-                ) : (
-                  <span className="badge badge-expired">CLOSED</span>
-                )}
               </div>
+
+              {/* --- ATTENDANCE TIMING UI --- */}
+              {todayOverview?.settings && (
+                <div style={{ padding: '1.25rem', borderRadius: '12px', background: '#F7FBF8', border: '1px solid #E2EDF0', marginBottom: '1.5rem' }}>
+                  <h4 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#10231A', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Clock size={16} color="#0B8F55" /> Attendance Timing
+                  </h4>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <p style={{ fontSize: '0.85rem', color: '#66756D', marginBottom: '0.25rem' }}>
+                        🟢 Starts at: <strong style={{ color: '#10231A' }}>{formatISTTime(todayOverview.settings.startTime)}</strong>
+                      </p>
+                      <p style={{ fontSize: '0.85rem', color: '#66756D' }}>
+                        🔴 Ends at: <strong style={{ color: '#10231A' }}>{formatISTTime(todayOverview.settings.endTime)}</strong>
+                      </p>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      {(() => {
+                        const start = new Date(todayOverview.settings.startTime).getTime();
+                        const end = new Date(todayOverview.settings.endTime).getTime();
+                        const now = new Date().getTime();
+                        
+                        if (now < start && todayOverview.settings.status === 'ACTIVE') {
+                          return (
+                            <>
+                              <span className="badge" style={{ background: '#DDF5E8', color: '#0B8F55', display: 'inline-block', marginBottom: '0.25rem' }}>SCHEDULED</span>
+                              <p style={{ fontSize: '0.8rem', color: '#0B8F55', fontWeight: 600 }}>Starts at {formatISTTime(start)}</p>
+                            </>
+                          );
+                        } else if (now >= start && now <= end && todayOverview.settings.status === 'ACTIVE') {
+                          return (
+                            <>
+                              <span className="badge pulse-active" style={{ background: '#0B8F55', color: '#FFF', display: 'inline-block', marginBottom: '0.25rem' }}>ATTENDANCE OPEN</span>
+                              <p style={{ fontSize: '0.8rem', color: '#0B8F55', fontWeight: 600 }}>Ends at {formatISTTime(end)}</p>
+                            </>
+                          );
+                        } else {
+                          return (
+                            <>
+                              <span className="badge" style={{ background: '#FDEEEE', color: '#E05252', display: 'inline-block', marginBottom: '0.25rem' }}>ATTENDANCE CLOSED</span>
+                              <p style={{ fontSize: '0.8rem', color: '#E05252', fontWeight: 600 }}>Ended at {formatISTTime(end)}</p>
+                            </>
+                          );
+                        }
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              )}
+              {/* ------------------------------ */}
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem', marginBottom: '1.5rem' }}>
                 <div style={{ padding: '0.85rem', borderRadius: '12px', background: '#DDF5E8', textAlign: 'center' }}>
