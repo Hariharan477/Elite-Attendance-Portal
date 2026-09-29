@@ -68,7 +68,7 @@ export const AdminDashboard: React.FC = () => {
         setWifiAPs(res.data);
       }
       if (activeSection === 'daily' || activeSection === 'dashboard') {
-        const res = await api.get(`/attendance/today-overview?date=${attendanceDate}`);
+        const res = await api.get(`/attendance/today-overview?date=${attendanceDate}&_t=${Date.now()}`);
         setTodayOverview(res.data);
 
         if (res.data.settings && res.data.settings.status === 'ACTIVE') {
@@ -98,7 +98,7 @@ export const AdminDashboard: React.FC = () => {
     let timer: any;
     if (activeSection === 'daily' || activeSection === 'dashboard') {
       timer = setInterval(() => {
-        api.get(`/attendance/today-overview?date=${attendanceDate}`).then((res) => {
+        api.get(`/attendance/today-overview?date=${attendanceDate}&_t=${Date.now()}`).then((res) => {
           setTodayOverview(res.data);
           if (res.data.settings && res.data.settings.status === 'ACTIVE') {
             const end = new Date(res.data.settings.endTime).getTime();
@@ -125,12 +125,25 @@ export const AdminDashboard: React.FC = () => {
   const handleStartDailyAttendance = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await api.post('/attendance/start', {
+      const res = await api.post('/attendance/start', {
         attendanceDate,
         startTime,
         endTime,
         wifiAccessPointId: selectedWifiAp || undefined
       });
+      
+      if (res.data) {
+        setTodayOverview((prev: any) => ({
+          ...prev,
+          settings: res.data
+        }));
+        if (res.data.status === 'ACTIVE') {
+          const end = new Date(res.data.endTime).getTime();
+          const now = new Date().getTime();
+          setTimeLeft(Math.max(0, Math.floor((end - now) / 1000)));
+        }
+      }
+
       alert('Daily attendance started successfully with Wi-Fi Location!');
       fetchSectionData();
     } catch (err: any) {

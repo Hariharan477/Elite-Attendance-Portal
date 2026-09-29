@@ -308,6 +308,9 @@ export const getTodayAttendanceOverview = async (req: AuthRequest, res: Response
 
     const presentStudents = allStudents.filter(s => markedStudentIds.has(String(s._id)));
     const absentStudents = allStudents.filter(s => !markedStudentIds.has(String(s._id)));
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
 
     return res.json({
       settings: settings || null,
