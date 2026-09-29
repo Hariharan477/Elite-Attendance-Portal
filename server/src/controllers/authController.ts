@@ -25,14 +25,9 @@ export const googleAuth = async (req: Request, res: Response) => {
         audience: GOOGLE_CLIENT_ID,
       });
       payload = ticket.getPayload();
-    } catch (verifyErr) {
-      // Decode JWT payload if client ID verification in local dev is mismatched
-      const decoded = jwt.decode(credential) as any;
-      if (decoded && decoded.email) {
-        payload = decoded;
-      } else {
-        return res.status(401).json({ message: 'Invalid Google authentication token' });
-      }
+    } catch (verifyErr: any) {
+      console.error(`[AUTH SECURITY REJECTED] Google verifyIdToken failed: ${verifyErr.message}`);
+      return res.status(401).json({ message: 'Invalid or forged Google authentication token' });
     }
 
     if (!payload || !payload.email) {
@@ -134,10 +129,10 @@ export const googleAuth = async (req: Request, res: Response) => {
           // Check if current student has an active device with another deviceId
           const studentActiveDevice = await StudentDevice.findOne({ studentId: user._id, isActive: true });
           if (studentActiveDevice) {
-            studentActiveDevice.deviceId = cleanDeviceId;
-            studentActiveDevice.lastUsedAt = new Date();
-            await studentActiveDevice.save();
-            console.log(`[DEVICE REGISTER] Updated device binding for student: ${user.email} (${user._id}) to ${cleanDeviceId}`);
+            console.log(`[DEVICE CHECK] REJECTED: Student ${user.email} attempted to login from a new device ${cleanDeviceId} but is already bound to ${studentActiveDevice.deviceId}`);
+            return res.status(403).json({
+              message: 'Your account is already bound to another device. Please contact your administrator to reset your device.'
+            });
           } else {
             // First time registration
             await StudentDevice.create({

@@ -126,7 +126,7 @@ export const markDailyAttendance = async (req: AuthRequest, res: Response) => {
 
     // 1. Time Check: BEFORE START
     if (now < startTime) {
-      const formattedStart = startTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+      const formattedStart = startTime.toLocaleTimeString('en-US', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true });
       console.log(`[ATTENDANCE TIME CHECK] REJECTED: Current time ${now.toISOString()} is before session start time ${startTime.toISOString()}`);
       return res.status(400).json({
         success: false,
@@ -136,8 +136,8 @@ export const markDailyAttendance = async (req: AuthRequest, res: Response) => {
 
     // 2. Time Check: AFTER END TIME / EXPIRED
     if (now >= endTime || settings.status !== 'ACTIVE') {
-      const formattedStart = startTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-      const formattedEnd = endTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+      const formattedStart = startTime.toLocaleTimeString('en-US', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true });
+      const formattedEnd = endTime.toLocaleTimeString('en-US', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true });
       console.log(`[ATTENDANCE TIME CHECK] REJECTED: Current time ${now.toISOString()} is after session end time ${endTime.toISOString()}`);
       
       if (settings.status === 'ACTIVE') {
