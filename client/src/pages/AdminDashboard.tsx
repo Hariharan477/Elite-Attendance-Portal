@@ -651,53 +651,100 @@ export const AdminDashboard: React.FC = () => {
               </div>
 
               {/* --- ATTENDANCE TIMING UI --- */}
-              {todayOverview?.settings && (
-                <div style={{ padding: '1.25rem', borderRadius: '12px', background: '#F7FBF8', border: '1px solid #E2EDF0', marginBottom: '1.5rem' }}>
-                  <h4 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#10231A', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Clock size={16} color="#0B8F55" /> Attendance Timing
-                  </h4>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <p style={{ fontSize: '0.85rem', color: '#66756D', marginBottom: '0.25rem' }}>
-                        🟢 Starts at: <strong style={{ color: '#10231A' }}>{formatISTTime(todayOverview.settings.startTime)}</strong>
-                      </p>
-                      <p style={{ fontSize: '0.85rem', color: '#66756D' }}>
-                        🔴 Ends at: <strong style={{ color: '#10231A' }}>{formatISTTime(todayOverview.settings.endTime)}</strong>
-                      </p>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      {(() => {
-                        const start = new Date(todayOverview.settings.startTime).getTime();
-                        const end = new Date(todayOverview.settings.endTime).getTime();
-                        const now = new Date().getTime();
-                        
-                        if (now < start && todayOverview.settings.status === 'ACTIVE') {
-                          return (
-                            <>
-                              <span className="badge" style={{ background: '#DDF5E8', color: '#0B8F55', display: 'inline-block', marginBottom: '0.25rem' }}>SCHEDULED</span>
-                              <p style={{ fontSize: '0.8rem', color: '#0B8F55', fontWeight: 600 }}>Starts at {formatISTTime(start)}</p>
-                            </>
-                          );
-                        } else if (now >= start && now <= end && todayOverview.settings.status === 'ACTIVE') {
-                          return (
-                            <>
-                              <span className="badge pulse-active" style={{ background: '#0B8F55', color: '#FFF', display: 'inline-block', marginBottom: '0.25rem' }}>ATTENDANCE OPEN</span>
-                              <p style={{ fontSize: '0.8rem', color: '#0B8F55', fontWeight: 600 }}>Ends at {formatISTTime(end)}</p>
-                            </>
-                          );
-                        } else {
-                          return (
-                            <>
-                              <span className="badge" style={{ background: '#FDEEEE', color: '#E05252', display: 'inline-block', marginBottom: '0.25rem' }}>ATTENDANCE CLOSED</span>
-                              <p style={{ fontSize: '0.8rem', color: '#E05252', fontWeight: 600 }}>Ended at {formatISTTime(end)}</p>
-                            </>
-                          );
-                        }
-                      })()}
-                    </div>
-                  </div>
+              <div style={{ padding: '1.25rem', borderRadius: '12px', background: '#F7FBF8', border: '1px solid #E2EDF0', marginBottom: '1.5rem' }}>
+                <h4 style={{ fontSize: '0.9rem', fontWeight: 700, color: '#10231A', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Clock size={16} color="#0B8F55" /> Attendance Timing
+                </h4>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  {(() => {
+                    const formatTimeString = (timeStr: string) => {
+                      if (!timeStr) return '';
+                      const [hours, mins] = timeStr.split(':');
+                      const h = parseInt(hours, 10);
+                      const ampm = h >= 12 ? 'PM' : 'AM';
+                      const displayH = h % 12 || 12;
+                      return `${displayH.toString().padStart(2, '0')}:${mins.padStart(2, '0')} ${ampm}`;
+                    };
+
+                    if (!todayOverview?.settings) {
+                      return (
+                        <>
+                          <div>
+                            <p style={{ fontSize: '0.85rem', color: '#66756D', marginBottom: '0.25rem' }}>
+                              🟢 Starts at: <strong style={{ color: '#10231A' }}>{formatTimeString(startTime)}</strong>
+                            </p>
+                            <p style={{ fontSize: '0.85rem', color: '#66756D' }}>
+                              🔴 Ends at: <strong style={{ color: '#10231A' }}>{formatTimeString(endTime)}</strong>
+                            </p>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <span className="badge" style={{ background: '#EEF9F2', color: '#0B8F55', display: 'inline-block', marginBottom: '0.25rem' }}>NOT STARTED</span>
+                          </div>
+                        </>
+                      );
+                    }
+
+                    const start = new Date(todayOverview.settings.startTime).getTime();
+                    const end = new Date(todayOverview.settings.endTime).getTime();
+                    const now = new Date().getTime();
+                    const startStr = formatISTTime(start);
+                    const endStr = formatISTTime(end);
+
+                    if (now < start && todayOverview.settings.status === 'ACTIVE') {
+                      return (
+                        <>
+                          <div>
+                            <p style={{ fontSize: '0.85rem', color: '#66756D', marginBottom: '0.25rem' }}>
+                              🟢 Starts at: <strong style={{ color: '#10231A' }}>{startStr}</strong>
+                            </p>
+                            <p style={{ fontSize: '0.85rem', color: '#66756D' }}>
+                              🔴 Ends at: <strong style={{ color: '#10231A' }}>{endStr}</strong>
+                            </p>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <span className="badge" style={{ background: '#DDF5E8', color: '#0B8F55', display: 'inline-block', marginBottom: '0.25rem' }}>SCHEDULED</span>
+                            <p style={{ fontSize: '0.8rem', color: '#0B8F55', fontWeight: 600 }}>Starts at {startStr}</p>
+                          </div>
+                        </>
+                      );
+                    } else if (now >= start && now <= end && todayOverview.settings.status === 'ACTIVE') {
+                      return (
+                        <>
+                          <div>
+                            <p style={{ fontSize: '0.85rem', color: '#66756D', marginBottom: '0.25rem' }}>
+                              🟢 Started at: <strong style={{ color: '#10231A' }}>{startStr}</strong>
+                            </p>
+                            <p style={{ fontSize: '0.85rem', color: '#66756D' }}>
+                              🔴 Ends at: <strong style={{ color: '#10231A' }}>{endStr}</strong>
+                            </p>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <span className="badge pulse-active" style={{ background: '#0B8F55', color: '#FFF', display: 'inline-block', marginBottom: '0.25rem' }}>ATTENDANCE OPEN</span>
+                            <p style={{ fontSize: '0.8rem', color: '#0B8F55', fontWeight: 600 }}>Ends at {endStr}</p>
+                          </div>
+                        </>
+                      );
+                    } else {
+                      return (
+                        <>
+                          <div>
+                            <p style={{ fontSize: '0.85rem', color: '#66756D', marginBottom: '0.25rem' }}>
+                              🟢 Started at: <strong style={{ color: '#10231A' }}>{startStr}</strong>
+                            </p>
+                            <p style={{ fontSize: '0.85rem', color: '#66756D' }}>
+                              🔴 Ended at: <strong style={{ color: '#10231A' }}>{endStr}</strong>
+                            </p>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <span className="badge" style={{ background: '#FDEEEE', color: '#E05252', display: 'inline-block', marginBottom: '0.25rem' }}>ATTENDANCE CLOSED</span>
+                            <p style={{ fontSize: '0.8rem', color: '#E05252', fontWeight: 600 }}>Ended at {endStr}</p>
+                          </div>
+                        </>
+                      );
+                    }
+                  })()}
                 </div>
-              )}
+              </div>
               {/* ------------------------------ */}
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem', marginBottom: '1.5rem' }}>
