@@ -362,7 +362,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Padding(
-              padding: const EdgeInsets.all(4.0),
+              padding: const EdgeInsets.all(2.0),
               child: Image.asset(
                 'assets/images/logo.png',
                 fit: BoxFit.contain,

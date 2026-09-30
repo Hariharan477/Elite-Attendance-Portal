@@ -110,8 +110,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  width: 90,
-                  height: 90,
+                  width: 100,
+                  height: 100,
                   decoration: BoxDecoration(
                     color: const Color(0xFFEEF9F2),
                     borderRadius: BorderRadius.circular(24),
@@ -126,7 +126,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   ),
                   child: Center(
                     child: Padding(
-                      padding: const EdgeInsets.all(10.0),
+                      padding: const EdgeInsets.all(4.0),
                       child: Image.asset(
                         'assets/images/logo.png',
                         fit: BoxFit.contain,

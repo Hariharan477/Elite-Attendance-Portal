@@ -52,14 +52,18 @@ export const Login: React.FC = () => {
         {/* Portal Logo */}
         <div style={{
           display: 'inline-flex',
-          padding: '18px',
+          padding: '12px',
           borderRadius: '20px',
           background: 'var(--bg-pale)',
           border: '1.5px solid var(--bg-light)',
           marginBottom: '1.5rem',
-          boxShadow: '0 4px 16px rgba(11, 143, 85, 0.12)'
+          boxShadow: '0 4px 16px rgba(11, 143, 85, 0.12)',
+          width: '88px',
+          height: '88px',
+          alignItems: 'center',
+          justifyContent: 'center'
         }}>
-          <img src="/logo.png" alt="Elite Class Portal Logo" width="44" height="44" style={{ objectFit: 'contain' }} />
+          <img src="/logo.png" alt="Elite Class Portal Logo" width="64" height="64" style={{ objectFit: 'contain' }} />
         </div>
 
         <h1 style={{ fontSize: '1.85rem', fontWeight: 800, letterSpacing: '-0.025em', color: 'var(--text-primary)', marginBottom: '0.4rem' }}>

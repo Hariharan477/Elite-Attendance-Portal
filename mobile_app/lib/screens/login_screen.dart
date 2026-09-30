@@ -99,8 +99,8 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 // ── OFFICIAL BRAND LOGO ──
                 Container(
-                  width: 76,
-                  height: 76,
+                  width: 90,
+                  height: 90,
                   decoration: BoxDecoration(
                     color: _paleGreen,
                     borderRadius: BorderRadius.circular(22),
@@ -118,7 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   child: Center(
                     child: Padding(
-                      padding: const EdgeInsets.all(8.0),
+                      padding: const EdgeInsets.all(4.0),
                       child: Image.asset(
                         'assets/images/logo.png',
                         fit: BoxFit.contain,

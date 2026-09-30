@@ -28,8 +28,8 @@ export const App: React.FC = () => {
         <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-            <div style={{ padding: '8px', borderRadius: '12px', background: '#DDF5E8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <img src="/logo.png" alt="Logo" width="24" height="24" style={{ objectFit: 'contain' }} />
+            <div style={{ padding: '4px', borderRadius: '12px', background: '#DDF5E8', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px' }}>
+              <img src="/logo.png" alt="Logo" width="32" height="32" style={{ objectFit: 'contain' }} />
             </div>
             <div>
               <h2 style={{ fontSize: '1.15rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#10231A' }}>
