@@ -3,7 +3,7 @@ import { useAuth } from './context/AuthContext';
 import { Login } from './pages/Login';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { StudentDashboard } from './pages/StudentDashboard';
-import { LogOut, ShieldCheck, User } from 'lucide-react';
+import { LogOut, User } from 'lucide-react';
 
 export const App: React.FC = () => {
   const { user, logout, loading } = useAuth();
@@ -29,7 +29,7 @@ export const App: React.FC = () => {
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
             <div style={{ padding: '8px', borderRadius: '12px', background: '#DDF5E8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <ShieldCheck size={24} color="#0B8F55" />
+              <img src="/logo.png" alt="Logo" width="24" height="24" style={{ objectFit: 'contain' }} />
             </div>
             <div>
               <h2 style={{ fontSize: '1.15rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#10231A' }}>

@@ -358,10 +358,16 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: _primaryGreen,
+              color: _paleGreen,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.shield_outlined, color: Colors.white, size: 22),
+            child: Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: Image.asset(
+                'assets/images/logo.png',
+                fit: BoxFit.contain,
+              ),
+            ),
           ),
           const SizedBox(width: 10),
           Expanded(

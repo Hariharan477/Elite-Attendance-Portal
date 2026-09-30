@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
-import { ShieldCheck, ShieldAlert } from 'lucide-react';
+import { ShieldAlert } from 'lucide-react';
 
 export const Login: React.FC = () => {
   const { loginWithGoogleToken } = useAuth();
@@ -59,7 +59,7 @@ export const Login: React.FC = () => {
           marginBottom: '1.5rem',
           boxShadow: '0 4px 16px rgba(11, 143, 85, 0.12)'
         }}>
-          <ShieldCheck size={44} color="#0B8F55" />
+          <img src="/logo.png" alt="Elite Class Portal Logo" width="44" height="44" style={{ objectFit: 'contain' }} />
         </div>
 
         <h1 style={{ fontSize: '1.85rem', fontWeight: 800, letterSpacing: '-0.025em', color: 'var(--text-primary)', marginBottom: '0.4rem' }}>

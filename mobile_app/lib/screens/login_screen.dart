@@ -97,7 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // ── GREEN-THEMED SHIELD LOGO ──
+                // ── OFFICIAL BRAND LOGO ──
                 Container(
                   width: 76,
                   height: 76,
@@ -116,11 +116,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ],
                   ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.shield_rounded,
-                      size: 40,
-                      color: _primaryGreen,
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        fit: BoxFit.contain,
+                      ),
                     ),
                   ),
                 ),
