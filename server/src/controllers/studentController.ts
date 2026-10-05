@@ -168,6 +168,10 @@ export const importStudentsExcel = async (req: Request, res: Response) => {
       defval: '',
       raw: false
     });
+    const sheetDataRaw: any[] = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {
+      defval: '',
+      raw: true
+    });
 
     console.log(`[importStudentsExcel] Parsed Row Count: ${sheetData.length}`);
 
@@ -178,6 +182,7 @@ export const importStudentsExcel = async (req: Request, res: Response) => {
 
     for (let i = 0; i < sheetData.length; i++) {
       const row: any = sheetData[i];
+      const rawRow: any = sheetDataRaw[i];
       const rowNum = i + 2;
 
       const name = String(row.Name || row.name || '').trim();
@@ -186,11 +191,29 @@ export const importStudentsExcel = async (req: Request, res: Response) => {
       const year = String(row.Year || row.year || '3').trim();
       const section = String(row.Section || row.section || 'A').trim();
 
-      const regNoRaw = row['Register Number'] || row['RegisterNo'] || row.registerNo || row.RegisterNo || row['Reg No'] || row['RegNo'] || '';
-      const registerNo = String(regNoRaw).trim();
+      let regNoRaw = row['Register Number'] || row['RegisterNo'] || row.registerNo || row.RegisterNo || row['Reg No'] || row['RegNo'] || '';
+      let registerNo = String(regNoRaw).trim();
 
-      const rollNoRaw = row['Roll Number'] || row['RollNo'] || row.rollNo || row.RollNo || registerNo;
-      const rollNo = String(rollNoRaw).trim();
+      // If Excel formatted the cell as scientific notation (e.g. 4.21125E+11), rescue the exact digits from the raw numeric value
+      if (registerNo.includes('E+') || registerNo.includes('e+')) {
+        const rawReg = rawRow['Register Number'] || rawRow['RegisterNo'] || rawRow.registerNo || rawRow.RegisterNo || rawRow['Reg No'] || rawRow['RegNo'];
+        if (typeof rawReg === 'number') {
+          // Convert Number to String safely, bypassing scientific notation
+          registerNo = rawReg.toLocaleString('fullwide', { useGrouping: false });
+        }
+      }
+
+      let rollNoRaw = row['Roll Number'] || row['RollNo'] || row.rollNo || row.RollNo || registerNo;
+      let rollNo = String(rollNoRaw).trim();
+
+      if (rollNo.includes('E+') || rollNo.includes('e+')) {
+        const rawRoll = rawRow['Roll Number'] || rawRow['RollNo'] || rawRow.rollNo || rawRow.RollNo;
+        if (typeof rawRoll === 'number') {
+          rollNo = rawRoll.toLocaleString('fullwide', { useGrouping: false });
+        } else if (rawRoll === undefined && typeof rawRow['Register Number'] === 'number') {
+          rollNo = registerNo;
+        }
+      }
 
       if (!name || !email) {
         skippedCount++;
