@@ -5,6 +5,7 @@ import {
   LayoutDashboard, Users, Calendar, FileText, Wifi, Settings, Plus,
   Trash2, Search, Download, Upload, Play, StopCircle, CheckCircle, XCircle, Clock, ShieldCheck, Info
 } from 'lucide-react';
+import { MonthlyCalendar } from '../components/MonthlyCalendar';
 
 const formatISTTime = (dateInput: string | number | Date) => {
   return new Date(dateInput).toLocaleTimeString('en-US', {
@@ -131,7 +132,7 @@ export const AdminDashboard: React.FC = () => {
         endTime,
         wifiAccessPointId: selectedWifiAp || undefined
       });
-      
+
       if (res.data) {
         setTodayOverview((prev: any) => ({
           ...prev,
@@ -255,7 +256,7 @@ export const AdminDashboard: React.FC = () => {
 
   return (
     <div style={{ display: 'flex', minHeight: 'calc(100vh - 70px)', background: '#F7FBF8' }}>
-      
+
       {/* ── SIDEBAR NAVIGATION ── */}
       <aside style={{
         width: '260px',
@@ -310,7 +311,7 @@ export const AdminDashboard: React.FC = () => {
 
       {/* ── CONTENT BODY ── */}
       <main style={{ flex: 1, padding: '2rem', overflowY: 'auto' }}>
-        
+
         {/* Section Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
           <div>
@@ -345,7 +346,7 @@ export const AdminDashboard: React.FC = () => {
         {activeSection === 'dashboard' && (
           <div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
-              
+
               <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <div style={{ padding: '12px', borderRadius: '14px', background: '#EEF9F2', color: '#0B8F55' }}>
                   <Users size={28} />
@@ -429,7 +430,7 @@ export const AdminDashboard: React.FC = () => {
         {/* 2. Students Management */}
         {activeSection === 'students' && (
           <div className="glass-card" style={{ padding: '1.5rem' }}>
-            
+
             {/* Excel Upload Row */}
             <div style={{
               padding: '1.25rem',
@@ -555,15 +556,16 @@ export const AdminDashboard: React.FC = () => {
         )}
 
         {/* 3. Daily Attendance Configuration & Today's Realtime Overview */}
+        {/* 3. Daily Attendance Configuration & Today's Realtime Overview */}
         {activeSection === 'daily' && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-            
-            {/* Form */}
-            <div className="glass-card" style={{ padding: '2rem' }}>
-              <h3 style={{ fontSize: '1.3rem', fontWeight: 800, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#10231A' }}>
-                <Calendar color="#0B8F55" /> Configure Today's Attendance
-              </h3>
-              
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+              {/* Form */}
+              <div className="glass-card" style={{ padding: '2rem' }}>
+                <h3 style={{ fontSize: '1.3rem', fontWeight: 800, marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#10231A' }}>
+                  <Calendar color="#0B8F55" /> Configure Today's Attendance
+                </h3>
+
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem', borderRadius: '10px', background: '#EEF9F2', color: '#0B8F55', fontSize: '0.82rem', marginBottom: '1.5rem' }}>
                 <Info size={16} />
                 <span>Each configured attendance session counts as 1 official class day in student percentage calculations.</span>
@@ -791,7 +793,12 @@ export const AdminDashboard: React.FC = () => {
               </div>
 
             </div>
+            </div>
 
+            <MonthlyCalendar onStartSessionClick={(date) => {
+              setAttendanceDate(date);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }} />
           </div>
         )}
 

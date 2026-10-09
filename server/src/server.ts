@@ -6,6 +6,7 @@ import authRoutes from './routes/authRoutes';
 import studentRoutes from './routes/studentRoutes';
 import attendanceRoutes from './routes/attendanceRoutes';
 import wifiRoutes from './routes/wifiRoutes';
+import calendarRoutes from './routes/calendarRoutes';
 import { seedDatabase } from './utils/seed';
 
 dotenv.config();
@@ -22,8 +23,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/wifi', wifiRoutes);
-
-
+app.use('/api/calendar', calendarRoutes);
 // Root Status
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Elite Attendance Management API Server Running' });

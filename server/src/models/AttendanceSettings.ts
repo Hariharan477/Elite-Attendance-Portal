@@ -10,6 +10,10 @@ export interface IAttendanceSettings extends Document {
   wifiSSID?: string;
   wifiBSSID?: string;
   wifiLocation?: string;
+  isExcluded?: boolean;
+  excludedAt?: Date;
+  excludedBy?: mongoose.Types.ObjectId | string;
+  exclusionReason?: string;
 }
 
 const AttendanceSettingsSchema = new Schema<IAttendanceSettings>(
@@ -22,7 +26,11 @@ const AttendanceSettingsSchema = new Schema<IAttendanceSettings>(
     wifiAccessPointId: { type: Schema.Types.ObjectId, ref: 'WifiAccessPoint' },
     wifiSSID: { type: String },
     wifiBSSID: { type: String },
-    wifiLocation: { type: String }
+    wifiLocation: { type: String },
+    isExcluded: { type: Boolean, default: false },
+    excludedAt: { type: Date },
+    excludedBy: { type: Schema.Types.ObjectId, ref: 'User' },
+    exclusionReason: { type: String }
   },
   { timestamps: true }
 );

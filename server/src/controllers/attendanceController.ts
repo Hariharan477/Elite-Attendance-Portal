@@ -6,6 +6,7 @@ import { AttendanceSettings } from '../models/AttendanceSettings';
 import { Attendance } from '../models/Attendance';
 import { User } from '../models/User';
 import { WifiAccessPoint } from '../models/WifiAccessPoint';
+import { CalendarDay } from '../models/CalendarDay';
 import { getIndiaDateString, formatIndiaDateTimeString, calculateSessionWindowIST } from '../utils/timezone';
 
 // Helper to check and auto-expire today's session
@@ -23,6 +24,11 @@ export const startDailyAttendance = async (req: AuthRequest, res: Response) => {
     const { attendanceDate, startTime, endTime, wifiAccessPointId } = req.body;
     if (!attendanceDate || !startTime || !endTime) {
       return res.status(400).json({ message: 'Attendance Date, Start Time, and End Time are required' });
+    }
+
+    const calendarDay = await CalendarDay.findOne({ date: attendanceDate });
+    if (calendarDay?.isHoliday) {
+      return res.status(400).json({ message: 'Attendance cannot be started on a marked holiday.' });
     }
 
     const { startDateTime, endDateTime } = calculateSessionWindowIST(attendanceDate, startTime, endTime);
@@ -112,7 +118,16 @@ export const markDailyAttendance = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ success: false, message: 'No Active Attendance Today' });
     }
 
+    if (settings.isExcluded) {
+      return res.status(403).json({ success: false, message: 'This attendance session has been excluded from official records.' });
+    }
+
     const attendanceDate = settings.attendanceDate;
+
+    const calendarDay = await CalendarDay.findOne({ date: attendanceDate });
+    if (calendarDay?.isHoliday) {
+      return res.status(403).json({ success: false, message: 'Cannot mark attendance on a marked holiday.' });
+    }
 
     const student = await User.findById(studentId);
     if (!student || student.role !== 'student') {
@@ -139,7 +154,7 @@ export const markDailyAttendance = async (req: AuthRequest, res: Response) => {
       const formattedStart = startTime.toLocaleTimeString('en-US', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true });
       const formattedEnd = endTime.toLocaleTimeString('en-US', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true });
       console.log(`[ATTENDANCE TIME CHECK] REJECTED: Current time ${now.toISOString()} is after session end time ${endTime.toISOString()}`);
-      
+
       if (settings.status === 'ACTIVE') {
         settings.status = 'EXPIRED';
         await settings.save();
@@ -348,8 +363,16 @@ export const getStudentTodayStatus = async (req: AuthRequest, res: Response) => 
     const record = await Attendance.findOne({ studentId, attendanceDate: targetDate });
 
     // Overall student attendance percentage
-    const totalDaysConfigured = await AttendanceSettings.countDocuments();
-    const totalAttendedDays = await Attendance.countDocuments({ studentId, status: 'PRESENT' });
+    const officialSessions = await AttendanceSettings.find({ isExcluded: { $ne: true } }).select('attendanceDate');
+    const officialDates = officialSessions.map(s => s.attendanceDate);
+
+    const totalDaysConfigured = officialDates.length;
+    const totalAttendedDays = await Attendance.countDocuments({
+      studentId,
+      status: 'PRESENT',
+      attendanceDate: { $in: officialDates }
+    });
+
     const percentage = totalDaysConfigured > 0
       ? ((totalAttendedDays / totalDaysConfigured) * 100).toFixed(1)
       : '0.0';
@@ -385,11 +408,29 @@ export const getAttendanceReport = async (req: AuthRequest, res: Response) => {
     const matchingStudents = await User.find(studentQuery).select('_id');
     const studentIds = matchingStudents.map(s => s._id);
 
-    let attendanceQuery: any = { studentId: { $in: studentIds } };
-    if (date) attendanceQuery.attendanceDate = date;
-    if (month) attendanceQuery.attendanceDate = new RegExp(`^${month}`);
+    // Get excluded dates to filter them out from reports
+    const excludedSessions = await AttendanceSettings.find({ isExcluded: true }).select('attendanceDate');
+    const excludedDates = excludedSessions.map(s => s.attendanceDate);
 
-    const records = await Attendance.find(attendanceQuery)
+    let attendanceQuery: any = { studentId: { $in: studentIds } };
+
+    let isExcludedDate = false;
+    if (date) {
+      if (excludedDates.includes(date as string)) {
+        isExcludedDate = true;
+      } else {
+        attendanceQuery.attendanceDate = date;
+      }
+    } else if (month) {
+      attendanceQuery.attendanceDate = {
+        $regex: new RegExp(`^${month}`),
+        $nin: excludedDates
+      };
+    } else {
+      attendanceQuery.attendanceDate = { $nin: excludedDates };
+    }
+
+    const records = isExcludedDate ? [] : await Attendance.find(attendanceQuery)
       .populate('studentId', 'name rollNo registerNo department year section email');
 
     // Excel Export
